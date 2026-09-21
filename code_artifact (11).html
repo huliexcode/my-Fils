@@ -17,12 +17,12 @@
             theme: {
                 extend: {
                     colors: {
-                        'nature-dark': '#1c2d24',      /* خلفية خضراء داكنة */
-                        'nature-green': '#2a4537',     /* أخضر طبيعي */
-                        'nature-light': '#5e7d69',     /* أخضر فاتح */
-                        'nature-beige': '#dfd2c1',     /* بيج رملي */
-                        'nature-brown': '#7a5a41',     /* بني خشبي */
-                        'nature-card': 'rgba(255, 255, 255, 0.05)', /* زجاجي */
+                        'nature-dark': '#15241c',      /* خلفية خضراء داكنة عميقة */
+                        'nature-green': '#20372b',     /* أخضر طبيعي غني */
+                        'nature-light': '#516f5d',     /* أخضر فاتح هادئ */
+                        'nature-beige': '#e6dcd0',     /* بيج رملي فاخر */
+                        'nature-brown': '#6d4f38',     /* بني خشبي دافئ */
+                        'nature-card': 'rgba(32, 55, 43, 0.45)', /* زجاجي أخضر */
                     },
                     fontFamily: {
                         sans: ['Tajawal', 'sans-serif'],
@@ -35,35 +35,36 @@
     <style>
         body {
             font-family: 'Tajawal', sans-serif;
-            background-color: #1c2d24;
+            background-color: #15241c;
             background-image: 
-                radial-gradient(circle at 10% 20%, rgba(94, 125, 105, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(122, 90, 65, 0.15) 0%, transparent 40%);
+                radial-gradient(circle at 10% 20%, rgba(81, 111, 93, 0.18) 0%, transparent 45%),
+                radial-gradient(circle at 90% 85%, rgba(109, 79, 56, 0.18) 0%, transparent 45%);
             background-attachment: fixed;
-            color: #dfd2c1;
+            color: #e6dcd0;
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* Glassmorphism Cards */
+        /* Glassmorphism Nature Cards */
         .glass-panel {
-            background: rgba(42, 69, 55, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(223, 210, 193, 0.1);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            border-radius: 24px;
+            background: rgba(32, 55, 43, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(230, 220, 208, 0.12);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            border-radius: 28px;
         }
 
         .glass-btn {
-            background: linear-gradient(135deg, #dfd2c1, #c7b6a1);
-            color: #2a4537;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #e6dcd0, #cfc1b0);
+            color: #15241c;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         }
         .glass-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px rgba(0,0,0,0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+            background: linear-gradient(135deg, #ffffff, #e6dcd0);
         }
 
         .card-hover {
@@ -71,31 +72,49 @@
         }
         .card-hover:hover {
             transform: translateY(-8px);
-            border-color: rgba(223, 210, 193, 0.3);
-            background: rgba(42, 69, 55, 0.7);
+            border-color: rgba(230, 220, 208, 0.35);
+            background: rgba(32, 55, 43, 0.75);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade {
+            animation: fadeIn 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+        }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(1deg); }
+        }
+        .floating-anim {
+            animation: floatSlow 6s ease-in-out infinite;
         }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1c2d24; }
-        ::-webkit-scrollbar-thumb { background: #5e7d69; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #dfd2c1; }
+        ::-webkit-scrollbar-track { background: #15241c; }
+        ::-webkit-scrollbar-thumb { background: #516f5d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #e6dcd0; }
 
         /* Loader */
         .loader {
-            border: 3px solid rgba(223, 210, 193, 0.2);
+            border: 3px solid rgba(230, 220, 208, 0.2);
             border-radius: 50%;
-            border-top: 3px solid #dfd2c1;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
+            border-top: 3px solid #e6dcd0;
+            width: 22px;
+            height: 22px;
+            animation: spin 0.9s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Organic Shapes */
+        /* Organic Background Shapes */
         .organic-shape {
             border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-            animation: morph 8s ease-in-out infinite;
+            animation: morph 10s ease-in-out infinite;
         }
         @keyframes morph {
             0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
@@ -103,17 +122,17 @@
             67% { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; }
         }
 
-        /* Toast */
+        /* Toast Notification */
         .toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(150px);
-            background: #2a4537; color: #dfd2c1; padding: 12px 24px; border-radius: 50px;
-            border: 1px solid rgba(223,210,193,0.2); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 100; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: fixed; bottom: 35px; left: 50%; transform: translateX(-50%) translateY(150px);
+            background: #20372b; color: #e6dcd0; padding: 14px 28px; border-radius: 50px;
+            border: 1px solid rgba(230,220,208,0.25); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100; display: flex; align-items: center; gap: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.4);
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
         .toast.error { background: #7a3a3a; color: white; border-color: #ff6b6b; }
         
-        .pdf-content { background-color: #ffffff !important; color: #1c2d24 !important; }
+        .pdf-content { background-color: #ffffff !important; color: #15241c !important; }
         .pdf-content * { color: inherit !important; }
     </style>
 </head>
@@ -134,7 +153,7 @@
             if (!toast || !toastMsg || !toastIcon) return;
             
             toastMsg.innerText = msg;
-            toast.className = 'toast show';
+            toast.className = 'toast show animate-fade';
             
             if (type === 'error') {
                 toast.classList.add('error');
@@ -163,15 +182,16 @@
             const dashboard = document.getElementById('dashboardView');
             if (dashboard) {
                 dashboard.classList.remove('hidden');
+                dashboard.classList.add('animate-fade');
             }
         }
 
         async function initApp() {
             try {
-                const savedWorks = localStorage.getItem('nature_works');
+                const savedWorks = localStorage.getItem('nature_works_v2');
                 if (savedWorks) window.worksData = JSON.parse(savedWorks);
                 
-                const savedProfile = localStorage.getItem('nature_profile');
+                const savedProfile = localStorage.getItem('nature_profile_v2');
                 if (savedProfile) window.profileData = JSON.parse(savedProfile);
             } catch(e) {
                 console.error("Error loading local data", e);
@@ -182,7 +202,7 @@
             
             updateProfileDisplay();
             updateYearFilterDropdown();
-            renderWorks('all');
+            renderWorks();
 
             if (window.isPublicView) {
                 enablePublicViewMode();
@@ -194,18 +214,19 @@
 
         window.dbSaveProfile = async (profileObj) => {
             window.profileData = profileObj;
-            localStorage.setItem('nature_profile', JSON.stringify(profileObj));
+            localStorage.setItem('nature_profile_v2', JSON.stringify(profileObj));
             updateProfileDisplay();
         };
 
         window.dbAddWork = async (workObj) => {
             const newWork = { id: 'work_' + Date.now(), ...workObj };
             window.worksData.push(newWork);
-            window.worksData.sort((a, b) => b.year - a.year);
+            // ترتيب تنازلي حسب التاريخ والوقت
+            window.worksData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             try {
-                localStorage.setItem('nature_works', JSON.stringify(window.worksData));
+                localStorage.setItem('nature_works_v2', JSON.stringify(window.worksData));
                 updateYearFilterDropdown();
-                renderWorks(document.getElementById('yearFilter')?.value || 'all');
+                renderWorks();
             } catch (e) {
                 window.worksData = window.worksData.filter(w => w.id !== newWork.id);
                 throw new Error('quota_exceeded');
@@ -214,99 +235,102 @@
 
         window.dbDeleteWork = async (workId) => {
             window.worksData = window.worksData.filter(w => w.id !== workId);
-            localStorage.setItem('nature_works', JSON.stringify(window.worksData));
+            localStorage.setItem('nature_works_v2', JSON.stringify(window.worksData));
             updateYearFilterDropdown();
-            renderWorks(document.getElementById('yearFilter')?.value || 'all');
+            renderWorks();
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            const yearInput = document.getElementById('workYear');
-            if (yearInput) {
-                yearInput.value = new Date().getFullYear();
+            const dateInput = document.getElementById('workDate');
+            if (dateInput) {
+                dateInput.value = new Date().toISOString().split('T')[0];
             }
             initApp();
         });
     </script>
 
-    <!-- Loading Screen -->
     <div id="loadingApp" class="fixed inset-0 flex flex-col justify-center items-center bg-nature-dark z-50">
-        <div class="loader mb-4 w-12 h-12 border-4"></div>
-        <h2 class="text-xl text-nature-beige font-bold tracking-widest">جاري تهيئة المنصة...</h2>
+        <div class="loader mb-4 w-14 h-14 border-4"></div>
+        <h2 class="text-xl text-nature-beige font-bold tracking-wider">جاري تهيئة منصة الإنجازات...</h2>
     </div>
 
-    <!-- Gateway / Quick Login Screen -->
     <div id="gatewayView" class="hidden fixed inset-0 z-40 bg-nature-dark flex items-center justify-center p-4">
-        <div class="absolute inset-0 overflow-hidden opacity-20 pointer-events-none">
+        <div class="absolute inset-0 overflow-hidden opacity-25 pointer-events-none">
             <div class="organic-shape bg-nature-light w-96 h-96 absolute -top-10 -left-20 blur-3xl"></div>
             <div class="organic-shape bg-nature-brown w-80 h-80 absolute bottom-10 right-10 blur-3xl" style="animation-delay: -3s;"></div>
         </div>
         
-        <div class="glass-panel p-10 max-w-lg w-full text-center relative z-10">
-            <div class="w-24 h-24 bg-nature-green rounded-full mx-auto flex items-center justify-center mb-6 shadow-lg border border-nature-light">
+        <div class="glass-panel p-10 max-w-lg w-full text-center relative z-10 floating-anim">
+            <div class="w-24 h-24 bg-nature-green rounded-full mx-auto flex items-center justify-center mb-6 shadow-2xl border border-nature-light/50">
                 <i class="fa-solid fa-leaf text-4xl text-nature-beige"></i>
             </div>
-            <h1 class="text-3xl font-bold text-nature-beige mb-2">منصة إنجازاتي</h1>
-            <p class="text-nature-light mb-8">حيث تنمو أعمالك وتزدهر كطبيعة خلابة.</p>
+            <h1 class="text-3xl font-bold text-nature-beige mb-3">منصة إنجازاتي المتميزة</h1>
+            <p class="text-nature-light mb-8 leading-relaxed">حيث تزدهر أعمالك وتتوثق إنجازاتك الإدارية والمهنية بأسلوب طبيعي وراقي.</p>
             
-            <button onclick="enterDashboard()" class="glass-btn w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3">
-                <span>دخول سريع للملف الإنجازي</span>
+            <button onclick="enterDashboard()" class="glass-btn w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3">
+                <span>الدخول إلى لوحة الأعمال</span>
                 <i class="fa-solid fa-arrow-left"></i>
             </button>
         </div>
     </div>
 
-    <!-- Main Dashboard -->
     <div id="dashboardView" class="hidden flex-grow flex flex-col relative z-10">
         
         <!-- Header -->
-        <header class="glass-panel rounded-b-3xl mb-8 mx-4 mt-2 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4 sticky top-2 z-30">
+        <header class="glass-panel rounded-b-3xl mb-8 mx-4 mt-2 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4 sticky top-2 z-30 animate-fade">
             <div class="flex items-center gap-3 text-nature-beige">
-                <i class="fa-brands fa-envira text-2xl text-nature-light"></i>
-                <h1 class="text-xl font-bold tracking-wide">إنجازاتي | My Portfolio</h1>
+                <i class="fa-brands fa-envira text-3xl text-nature-light"></i>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">بوابة إنجازاتي</h1>
+                    <p class="text-xs text-nature-light">سجل الأعمال والشواهد الاحترافية</p>
+                </div>
             </div>
             <div class="flex flex-wrap gap-3" id="headerActions">
-                <button onclick="exportToPDF()" class="text-sm bg-nature-brown/80 hover:bg-nature-brown text-white px-4 py-2 rounded-full font-medium transition-colors flex items-center gap-2 border border-white/10 shadow-lg">
-                    <i class="fa-solid fa-file-pdf"></i> تصدير PDF
+                <button onclick="exportToPDF()" class="text-sm bg-nature-brown/80 hover:bg-nature-brown text-white px-4 py-2.5 rounded-full font-medium transition-all flex items-center gap-2 border border-white/10 shadow-lg active:scale-95">
+                    <i class="fa-solid fa-file-pdf"></i> تصدير PDF شامل
                 </button>
-                <button onclick="generatePublicLink()" class="text-sm glass-btn px-4 py-2 rounded-full font-bold transition-colors flex items-center gap-2">
+                <button onclick="openStandalonePreview()" class="text-sm bg-nature-light/40 hover:bg-nature-light/60 text-nature-beige px-4 py-2.5 rounded-full font-bold transition-all flex items-center gap-2 border border-nature-light/60 shadow-md active:scale-95">
+                    <i class="fa-solid fa-eye"></i> عرض المنصة
+                </button>
+                <button onclick="generatePublicLink()" class="text-sm glass-btn px-4 py-2.5 rounded-full font-bold transition-all flex items-center gap-2 active:scale-95">
                     <i class="fa-solid fa-share-nodes"></i> بوابتك لعرض إنجازاتك
                 </button>
-                <button onclick="openProfileModal()" class="text-sm bg-nature-light/30 hover:bg-nature-light/50 text-nature-beige px-4 py-2 rounded-full font-medium transition-colors flex items-center gap-2 border border-nature-light/50">
+                <button onclick="openProfileModal()" class="text-sm bg-nature-green hover:bg-nature-green/80 text-nature-beige px-4 py-2.5 rounded-full font-medium transition-all flex items-center gap-2 border border-nature-light/40 shadow-md active:scale-95">
                     <i class="fa-solid fa-user-gear"></i> لوحة التحكم
                 </button>
             </div>
         </header>
 
-        <main class="container mx-auto px-4 pb-12 flex-grow flex flex-col lg:flex-row gap-8 items-start">
+        <main class="container mx-auto px-4 pb-16 flex-grow flex flex-col lg:flex-row gap-8 items-start">
             
-            <!-- Left Panel: Add New Work -->
-            <div id="adminPanel" class="w-full lg:w-1/3 glass-panel p-6 sticky top-28">
+            <!-- Left Panel: Add New Work Form -->
+            <div id="adminPanel" class="w-full lg:w-1/3 glass-panel p-6 sticky top-28 animate-fade">
                 <h2 class="text-xl font-bold mb-6 text-nature-beige border-b border-nature-light/30 pb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-seedling text-nature-light"></i> زرع إنجاز جديد
+                    <i class="fa-solid fa-seedling text-nature-light"></i> غرس إنجاز جديد
                 </h2>
                 
                 <form id="workForm" class="space-y-5">
                     <div>
                         <label class="block text-sm font-semibold mb-2 text-nature-beige/80">عنوان العمل</label>
-                        <input type="text" id="workTitle" placeholder="مثال: التقييم الذاتي السنوي لعام 2026" 
-                               class="w-full px-4 py-3 rounded-xl bg-nature-dark/50 border border-nature-light/30 text-nature-beige focus:border-nature-beige focus:ring-1 focus:ring-nature-beige outline-none transition-all placeholder-nature-light/50">
+                        <input type="text" id="workTitle" placeholder="مثال: تقييم الأداء الوظيفي السنوي" 
+                               class="w-full px-4 py-3 rounded-xl bg-nature-dark/60 border border-nature-light/30 text-nature-beige focus:border-nature-beige focus:ring-1 focus:ring-nature-beige outline-none transition-all placeholder-nature-light/50">
                     </div>
 
                     <div>
                         <div class="flex justify-between items-end mb-2">
-                            <label class="block text-sm font-semibold text-nature-beige/80">الوصف الذكي</label>
+                            <label class="block text-sm font-semibold text-nature-beige/80">الوصف والتوضيح الذكي</label>
                             <button type="button" id="aiBtn" onclick="triggerSmartDescription()" 
-                                    class="text-xs bg-nature-brown text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-opacity-80 transition-all active:scale-95 shadow-md">
+                                    class="text-xs bg-nature-brown hover:bg-nature-brown/80 text-white px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-all active:scale-95 shadow-md">
                                 <i class="fa-solid fa-wand-magic-sparkles"></i>
                                 <span id="aiBtnText">اقتراح وصف احترافي</span>
                             </button>
                         </div>
                         <textarea id="workDesc" rows="5" placeholder="سيتم صياغة التوضيح شاملاً: نبذة عن التقييم الذاتي، سبب الطلب، المتعلقات، والمشاكل في حال عدم التقييم..." 
-                                  class="w-full px-4 py-3 rounded-xl bg-nature-dark/50 border border-nature-light/30 text-nature-beige focus:border-nature-beige outline-none transition-all resize-none placeholder-nature-light/50 text-sm"></textarea>
+                                  class="w-full px-4 py-3 rounded-xl bg-nature-dark/60 border border-nature-light/30 text-nature-beige focus:border-nature-beige outline-none transition-all resize-none placeholder-nature-light/50 text-sm leading-relaxed"></textarea>
                         
                         <div class="mt-3 flex justify-end">
                             <button type="button" id="aiReportBtn" onclick="triggerReportFromEvidences()" 
-                                    class="text-xs bg-nature-light/20 hover:bg-nature-light/40 text-nature-beige px-4 py-2 rounded-lg flex items-center gap-2 border border-nature-light/50 transition-all active:scale-95 shadow-sm">
+                                    class="text-xs bg-nature-light/25 hover:bg-nature-light/45 text-nature-beige px-4 py-2 rounded-lg flex items-center gap-2 border border-nature-light/50 transition-all active:scale-95 shadow-sm">
                                 <i class="fa-solid fa-microchip"></i>
                                 <span id="aiReportBtnText">توليد تقرير الشواهد (AI)</span>
                             </button>
@@ -314,14 +338,19 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold mb-2 text-nature-beige/80">الشواهد (صور، فيديو، مستند)</label>
-                        <div class="relative w-full min-h-[8rem] border-2 border-dashed border-nature-light/50 rounded-xl hover:border-nature-beige transition-colors bg-nature-dark/30 flex flex-col justify-center items-center overflow-hidden p-4 group cursor-pointer" onclick="if(event.target === this || event.target.closest('#uploadPlaceholder')) document.getElementById('workFile').click()">
+                        <label class="block text-sm font-semibold mb-2 text-nature-beige/80">تاريخ الإنجاز (لتنظيمه بالشهر والسنة)</label>
+                        <input type="date" id="workDate" class="w-full px-4 py-3 rounded-xl bg-nature-dark/60 border border-nature-light/30 text-nature-beige outline-none focus:border-nature-beige [color-scheme:dark]">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-nature-beige/80">الشواهد (صور، فيديو، مستند - تحديد متعدد)</label>
+                        <div class="relative w-full min-h-[8.5rem] border-2 border-dashed border-nature-light/50 rounded-xl hover:border-nature-beige transition-colors bg-nature-dark/40 flex flex-col justify-center items-center overflow-hidden p-4 group cursor-pointer" onclick="if(event.target === this || event.target.closest('#uploadPlaceholder')) document.getElementById('workFile').click()">
                             
                             <input type="file" id="workFile" accept="image/*,video/*,application/pdf,.md" multiple class="hidden" onchange="previewFiles(event)">
                             
                             <div id="uploadPlaceholder" class="text-center text-nature-light group-hover:text-nature-beige transition-colors py-4">
                                 <i class="fa-solid fa-cloud-arrow-up text-3xl mb-2"></i>
-                                <p class="text-xs font-medium">أضف شواهد (يدعم التحديد المتعدد)</p>
+                                <p class="text-xs font-medium">اختر أو اسحب الشواهد (يدعم التحديد المتعدد)</p>
                                 <p class="text-[10px] mt-1 opacity-70">الحد الأقصى للملف 1.5MB</p>
                             </div>
                             
@@ -340,11 +369,11 @@
                 </form>
             </div>
 
-            <!-- Right Panel: Gallery -->
-            <div id="portfolio-content" class="w-full lg:w-2/3 flex flex-col transition-all duration-500">
+            <div id="portfolio-content" class="w-full lg:w-2/3 flex flex-col transition-all duration-500 animate-fade">
                 
+                <!-- Profile Display Card -->
                 <div id="profileDisplayCard" class="glass-panel p-6 mb-6 hidden items-center justify-between gap-6 relative overflow-hidden">
-                    <div class="absolute -right-10 -top-10 text-nature-light/20 opacity-20"><i class="fa-solid fa-fingerprint text-9xl"></i></div>
+                    <div class="absolute -right-10 -top-10 text-nature-light/20 opacity-20 pointer-events-none"><i class="fa-solid fa-fingerprint text-9xl"></i></div>
                     
                     <div class="flex items-center gap-5 relative z-10">
                         <img id="displayPhoto" src="" alt="Profile" class="w-20 h-20 rounded-full object-cover border-4 border-nature-beige shadow-xl">
@@ -356,47 +385,58 @@
                     </div>
 
                     <div id="displayLogoContainer" class="hidden relative z-10">
-                        <img id="displayLogo" src="" alt="Logo" class="w-16 h-16 object-contain rounded-xl bg-nature-dark/40 p-1 border border-nature-light/30 shadow-md">
+                        <img id="displayLogo" src="" alt="Logo" class="w-16 h-16 object-contain rounded-xl bg-nature-dark/50 p-1.5 border border-nature-light/30 shadow-md">
                     </div>
                 </div>
 
+                <!-- Stats & Search Bar -->
                 <div class="glass-panel p-4 mb-6 flex flex-wrap justify-between items-center gap-4" id="statsBar">
                     <div class="flex items-center gap-4">
-                        <div class="bg-nature-light/20 text-nature-beige w-12 h-12 rounded-2xl flex justify-center items-center font-bold text-xl border border-nature-light/30 shadow-inner" id="totalWorks">0</div>
+                        <div class="bg-nature-light/25 text-nature-beige w-12 h-12 rounded-2xl flex justify-center items-center font-bold text-xl border border-nature-light/30 shadow-inner" id="totalWorks">0</div>
                         <div>
-                            <h3 class="font-bold text-nature-beige">حصاد الأعمال</h3>
-                            <p class="text-xs text-nature-light">المسجلة في المنصة</p>
+                            <h3 class="font-bold text-nature-beige">حصاد الأعمال الشهرية</h3>
+                            <p class="text-xs text-nature-light">مرتبة تنازلياً حسب الشهور</p>
                         </div>
                     </div>
                     
-                    <div class="flex items-center gap-2 bg-nature-dark/50 px-4 py-2 rounded-xl border border-nature-light/20" id="filterContainer">
-                        <i class="fa-solid fa-filter text-nature-light"></i>
-                        <select id="yearFilter" onchange="filterWorks()" class="bg-transparent text-nature-beige outline-none text-sm font-medium cursor-pointer">
-                            <option value="all" class="bg-nature-dark text-white">كل السنين</option>
-                        </select>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <!-- Search Bar -->
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying glass text-nature-light absolute right-3.5 top-3 text-sm"></i>
+                            <input type="text" id="searchInput" oninput="renderWorks()" placeholder="بحث في الإنجازات..." 
+                                   class="pr-9 pl-4 py-2 rounded-xl bg-nature-dark/60 border border-nature-light/30 text-nature-beige text-sm outline-none focus:border-nature-beige w-44 md:w-56 placeholder-nature-light/50">
+                        </div>
+
+                        <!-- Year Filter -->
+                        <div class="flex items-center gap-2 bg-nature-dark/60 px-3.5 py-2 rounded-xl border border-nature-light/30">
+                            <i class="fa-solid fa-filter text-nature-light text-sm"></i>
+                            <select id="yearFilter" onchange="renderWorks()" class="bg-transparent text-nature-beige outline-none text-sm font-medium cursor-pointer">
+                                <option value="all" class="bg-nature-dark text-white">كل السنين</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <div id="worksGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-10">
-                    <div id="emptyState" class="col-span-1 md:col-span-2 flex flex-col items-center justify-center py-24 text-nature-light text-center glass-panel">
+                <!-- Works Timeline / Grid Container -->
+                <div id="worksTimelineContainer" class="flex flex-col gap-8 pb-10">
+                    <div id="emptyState" class="flex flex-col items-center justify-center py-24 text-nature-light text-center glass-panel">
                         <i class="fa-brands fa-pagelines text-6xl mb-4 opacity-50"></i>
                         <h3 class="text-xl font-bold text-nature-beige mb-2">الحقل فارغ حالياً</h3>
-                        <p class="text-sm opacity-80">قم بإضافة إنجازاتك الأولى من القائمة الجانبية لتزدهر هنا.</p>
+                        <p class="text-sm opacity-80">قم بغرس إنجازك الأول من القائمة الجانبية لتزدهر هنا.</p>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Profile Setup Modal -->
-    <div id="profileModal" class="fixed inset-0 bg-black/70 hidden z-50 flex justify-center items-center backdrop-blur-sm transition-opacity p-4">
-        <div class="glass-panel p-8 w-full max-w-md shadow-2xl relative">
+    <div id="profileModal" class="fixed inset-0 bg-black/75 hidden z-50 flex justify-center items-center backdrop-blur-md transition-opacity p-4">
+        <div class="glass-panel p-8 w-full max-w-md shadow-2xl relative animate-fade">
             <button onclick="closeProfileModal()" class="absolute top-5 left-5 text-nature-light hover:text-red-400 transition-colors">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
             <div class="flex items-center gap-3 mb-6 border-b border-nature-light/30 pb-4">
                 <i class="fa-solid fa-id-card text-2xl text-nature-beige"></i>
-                <h2 class="text-xl font-bold text-nature-beige">لوحة تحكم البروفايل</h2>
+                <h2 class="text-xl font-bold text-nature-beige">لوحة تحكم البروفايل والشعار</h2>
             </div>
             
             <form id="profileForm" class="space-y-4">
@@ -414,14 +454,14 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 text-nature-beige/80">صورة الموظف الشخصية</label>
-                    <input type="file" id="profPhoto" accept="image/*" class="w-full text-sm text-nature-light file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-nature-light/20 file:text-nature-beige hover:file:bg-nature-light/40 cursor-pointer">
+                    <input type="file" id="profPhoto" accept="image/*" class="w-full text-sm text-nature-light file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-nature-light/25 file:text-nature-beige hover:file:bg-nature-light/45 cursor-pointer">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 text-nature-beige/80">شعار المنشأة (Logo)</label>
-                    <input type="file" id="profLogo" accept="image/*" class="w-full text-sm text-nature-light file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-nature-light/20 file:text-nature-beige hover:file:bg-nature-light/40 cursor-pointer">
+                    <input type="file" id="profLogo" accept="image/*" class="w-full text-sm text-nature-light file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-nature-light/25 file:text-nature-beige hover:file:bg-nature-light/45 cursor-pointer">
                 </div>
                 <button type="button" onclick="saveProfile()" class="glass-btn w-full py-3 rounded-xl font-bold mt-4 shadow-lg">
-                    <i class="fa-solid fa-check-circle mr-1"></i> اعتماد البروفايل
+                    <i class="fa-solid fa-check-circle mr-1"></i> اعتماد البروفايل والشعار
                 </button>
             </form>
         </div>
@@ -430,7 +470,7 @@
     <!-- Notification Toast -->
     <div id="toast" class="toast">
         <i id="toastIcon" class="fa-solid fa-circle-check"></i>
-        <span id="toastMsg" class="font-medium text-sm">تمت العملية</span>
+        <span id="toastMsg" class="font-medium text-sm">تمت العملية بنجاح</span>
     </div>
 
     <script>
@@ -457,7 +497,7 @@
             const proceedSave = async () => {
                 try {
                     await window.dbSaveProfile(profileObj);
-                    showToast('تم اعتماد البروفايل بنجاح');
+                    showToast('تم اعتماد البروفايل والشعار بنجاح');
                     closeProfileModal();
                 } catch (e) {
                     console.error(e);
@@ -529,7 +569,7 @@
             document.getElementById('displayDate').querySelector('span').innerText = window.profileData.date ? `تاريخ التعيين: ${window.profileData.date}` : 'التاريخ غير محدد';
             
             const photoEl = document.getElementById('displayPhoto');
-            photoEl.src = window.profileData.photo || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(window.profileData.name || 'M') + '&background=dfd2c1&color=2a4537');
+            photoEl.src = window.profileData.photo || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(window.profileData.name || 'M') + '&background=e6dcd0&color=15241c');
             
             const logoContainer = document.getElementById('displayLogoContainer');
             const logoEl = document.getElementById('displayLogo');
@@ -563,11 +603,11 @@
                     if (fileType.startsWith('image/')) {
                         thumbHtml = `<img src="${newFileObj.data}" class="w-16 h-16 object-cover rounded-lg border border-nature-light/50 shadow-sm">`;
                     } else if (fileType.startsWith('video/')) {
-                        thumbHtml = `<div class="w-16 h-16 bg-nature-dark/80 rounded-lg flex items-center justify-center border border-nature-light/50 shadow-sm"><i class="fa-solid fa-file-video text-2xl text-blue-300"></i></div>`;
+                        thumbHtml = `<div class="w-16 h-16 bg-nature-dark/90 rounded-lg flex items-center justify-center border border-nature-light/50 shadow-sm"><i class="fa-solid fa-file-video text-2xl text-blue-300"></i></div>`;
                     } else if (fileType === 'application/pdf') {
-                        thumbHtml = `<div class="w-16 h-16 bg-nature-dark/80 rounded-lg flex items-center justify-center border border-nature-light/50 shadow-sm"><i class="fa-solid fa-file-pdf text-2xl text-red-400"></i></div>`;
+                        thumbHtml = `<div class="w-16 h-16 bg-nature-dark/90 rounded-lg flex items-center justify-center border border-nature-light/50 shadow-sm"><i class="fa-solid fa-file-pdf text-2xl text-red-400"></i></div>`;
                     } else {
-                        thumbHtml = `<div class="w-16 h-16 bg-nature-dark/80 rounded-lg flex items-center justify-center border border-nature-light/50 shadow-sm"><i class="fa-solid fa-file-lines text-2xl text-gray-300"></i></div>`;
+                        thumbHtml = `<div class="w-16 h-16 bg-nature-dark/90 rounded-lg flex items-center justify-center border border-nature-light/50 shadow-sm"><i class="fa-solid fa-file-lines text-2xl text-gray-300"></i></div>`;
                     }
                     
                     container.innerHTML += thumbHtml;
@@ -613,7 +653,7 @@
 3. المتعلقات (الوثائق أو الشواهد المرتبطة به).
 4. المشكلات والعواقب التي نقع فيها في حال عدم إتمام التقييم في وقته.
 
-اكتب النص بصياغة احترافية ومنظمة بأسلوب نقاط أو فقرات واضحة ومباشرة بدون مقدمات مطولة.`;
+اكتب النص بصياغة احترافية ومنظمة بأسلوب فقرات واضحة ومباشرة بدون مقدمات مطولة.`;
                 
                 const payload = {
                     contents: [{ parts: [{ text: `عنوان العمل: ${title}` }] }],
@@ -730,7 +770,7 @@
                 e.preventDefault();
                 const title = document.getElementById('workTitle').value.trim();
                 const desc = document.getElementById('workDesc').value.trim();
-                const year = new Date().getFullYear();
+                const dateVal = document.getElementById('workDate').value || new Date().toISOString().split('T')[0];
                 const submitBtn = this.querySelector('button[type="submit"]');
 
                 if (!title || !desc || window.currentFiles.length === 0) {
@@ -742,19 +782,23 @@
                 submitBtn.innerHTML = '<div class="loader mx-auto border-nature-dark border-t-transparent"></div>';
                 submitBtn.disabled = true;
 
+                const [year, month, day] = dateVal.split('-');
                 const newWork = {
                     id: 'work_' + Date.now(),
                     title: title,
                     description: desc,
-                    year: year,
+                    date: dateVal,
+                    year: parseInt(year),
+                    month: parseInt(month),
                     files: [...window.currentFiles],
                     createdAt: new Date().toISOString()
                 };
 
                 try {
                     await window.dbAddWork(newWork);
-                    showToast('تم زراعة الإنجاز بنجاح');
+                    showToast('تم غرس الإنجاز بنجاح');
                     this.reset();
+                    document.getElementById('workDate').value = new Date().toISOString().split('T')[0];
                     removePreview();
                 } catch (e) {
                     console.error(e);
@@ -789,29 +833,50 @@
             let html = '<option value="all" class="bg-nature-dark text-white">كل السنين</option>';
             years.forEach(y => html += `<option value="${y}" class="bg-nature-dark text-white">${y}</option>`);
             filter.innerHTML = html;
-            if (years.includes(curr) || curr === 'all') filter.value = curr;
+            if (years.includes(parseInt(curr)) || curr === 'all') filter.value = curr;
         }
 
-        function filterWorks() {
-            renderWorks(document.getElementById('yearFilter').value);
+        function getMonthName(monthNumber) {
+            const months = [
+                'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+                'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+            ];
+            return months[monthNumber - 1] || 'شهر غير محدد';
         }
 
-        function renderWorks(yearFilter) {
-            const grid = document.getElementById('worksGrid');
+        function renderWorks() {
+            const container = document.getElementById('worksTimelineContainer');
             const empty = document.getElementById('emptyState');
-            if(!grid) return;
+            const searchInput = document.getElementById('searchInput');
+            const yearFilter = document.getElementById('yearFilter');
             
-            let filtered = window.worksData;
-            if(yearFilter !== 'all') filtered = filtered.filter(w => w.year == yearFilter);
+            if(!container) return;
+            
+            let filtered = [...window.worksData];
+            
+            // Filter by Year
+            const selectedYear = yearFilter ? yearFilter.value : 'all';
+            if(selectedYear !== 'all') {
+                filtered = filtered.filter(w => w.year == selectedYear);
+            }
+            
+            // Filter by Search Query
+            const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            if(query) {
+                filtered = filtered.filter(w => 
+                    w.title.toLowerCase().includes(query) || 
+                    w.description.toLowerCase().includes(query)
+                );
+            }
             
             const totalWorksEl = document.getElementById('totalWorks');
             if(totalWorksEl) totalWorksEl.innerText = filtered.length;
             
-            grid.innerHTML = '';
+            container.innerHTML = '';
             
             if(filtered.length === 0) {
                 if(empty) {
-                    grid.appendChild(empty);
+                    container.appendChild(empty);
                     empty.style.display = 'flex';
                 }
                 return;
@@ -819,61 +884,108 @@
                 empty.style.display = 'none';
             }
 
+            // Group by Year and Month (e.g., "2026-3" -> March 2026)
+            const grouped = {};
             filtered.forEach(work => {
-                const card = document.createElement('div');
-                card.className = 'glass-panel card-hover overflow-hidden flex flex-col relative group';
-                
-                const workFiles = work.files || (work.file ? [work.file] : []);
-                
-                let mediaGalleryHtml = '';
-                if(workFiles.length > 0) {
-                    const gridCols = workFiles.length === 1 ? 'grid-cols-1' : (workFiles.length === 2 ? 'grid-cols-2' : 'grid-cols-3');
-                    mediaGalleryHtml = `<div class="grid ${gridCols} gap-0.5 h-48 w-full overflow-hidden bg-nature-dark/50">`;
-                    
-                    workFiles.slice(0, 3).forEach((f, idx) => {
-                        const type = f.type || '';
-                        const data = f.data;
-                        const fName = f.name || 'ملف';
-                        
-                        let moreOverlay = '';
-                        if (idx === 2 && workFiles.length > 3) {
-                            moreOverlay = `<div class="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-xl">+${workFiles.length - 3}</div>`;
-                        }
-
-                        if (type.startsWith('image/')) {
-                            mediaGalleryHtml += `<div class="relative h-full w-full"><img src="${data}" class="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity" onclick="window.open('${data}')">${moreOverlay}</div>`;
-                        } else if (type.startsWith('video/')) {
-                            mediaGalleryHtml += `<div class="relative h-full w-full"><video src="${data}" class="w-full h-full object-cover bg-black" controls></video>${moreOverlay}</div>`;
-                        } else {
-                            mediaGalleryHtml += `<a href="${data}" download="${fName}" class="relative w-full h-full flex flex-col items-center justify-center bg-nature-light/20 hover:bg-nature-light/40 transition-colors text-nature-beige"><i class="fa-solid fa-file-pdf text-3xl mb-1 text-red-400"></i><span class="text-[10px] font-bold px-2 line-clamp-1">${fName}</span>${moreOverlay}</a>`;
-                        }
-                    });
-                    mediaGalleryHtml += `</div>`;
+                const y = work.year || new Date().getFullYear();
+                const m = work.month || 1;
+                const key = `${y}-${m}`;
+                if(!grouped[key]) {
+                    grouped[key] = { year: y, month: m, works: [] };
                 }
+                grouped[key].works.push(work);
+            });
 
-                const delBtn = window.isPublicView ? '' : `<button onclick="removeWork('${work.id}')" class="absolute top-3 left-3 bg-red-500/80 hover:bg-red-500 text-white w-8 h-8 rounded-full shadow backdrop-blur opacity-0 group-hover:opacity-100 transition-opacity z-20 flex items-center justify-center" title="حذف الإنجاز"><i class="fa-solid fa-trash text-sm"></i></button>`;
+            // Sort group keys descending (newest year/month first)
+            const sortedKeys = Object.keys(grouped).sort((a, b) => {
+                const [y1, m1] = a.split('-').map(Number);
+                const [y2, m2] = b.split('-').map(Number);
+                if(y1 !== y2) return y2 - y1;
+                return m2 - m1;
+            });
+
+            sortedKeys.forEach(key => {
+                const group = grouped[key];
+                const monthName = getMonthName(group.month);
                 
-                const pdfExportBtn = `<button onclick="exportSingleWorkPDF('${work.id}')" class="text-xs bg-nature-brown hover:bg-nature-brown/80 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" title="تصدير تقرير لهذا الإنجاز">
-                    <i class="fa-solid fa-file-pdf"></i> تقرير
-                </button>`;
-
-                card.innerHTML = `
-                    <div class="relative border-b border-nature-light/20 w-full h-48">
-                        ${mediaGalleryHtml}
-                        <div class="absolute top-3 right-3 bg-nature-dark/80 backdrop-blur text-nature-beige px-3 py-1 rounded-full text-xs font-bold border border-nature-light/30 shadow z-10 pointer-events-none">
-                            <i class="fa-regular fa-calendar ml-1"></i> ${work.year}
+                // Month Section Header
+                const sectionEl = document.createElement('div');
+                sectionEl.className = 'flex flex-col gap-4 animate-fade';
+                
+                sectionEl.innerHTML = `
+                    <div class="flex items-center gap-3 border-b border-nature-light/30 pb-3 mt-4">
+                        <div class="bg-nature-green text-nature-beige px-4 py-1.5 rounded-xl font-bold text-sm shadow-md border border-nature-light/40 flex items-center gap-2">
+                            <i class="fa-regular fa-calendar-days"></i>
+                            <span>${monthName} ${group.year}</span>
                         </div>
-                        ${delBtn}
-                    </div>
-                    <div class="p-5 flex-grow flex flex-col bg-gradient-to-b from-transparent to-nature-dark/50">
-                        <div class="flex justify-between items-start mb-3 gap-2">
-                            <h3 class="font-bold text-xl text-nature-beige line-clamp-1 flex-grow">${work.title}</h3>
-                            ${pdfExportBtn}
-                        </div>
-                        <p class="text-nature-beige/80 text-sm leading-relaxed whitespace-pre-line line-clamp-4">${work.description}</p>
+                        <div class="h-0.5 flex-grow bg-gradient-to-l from-nature-light/30 to-transparent"></div>
+                        <span class="text-xs text-nature-light font-medium">${group.works.length} إنجازات</span>
                     </div>
                 `;
-                grid.appendChild(card);
+
+                // Grid of cards for this month
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'grid grid-cols-1 md:grid-cols-2 gap-6';
+
+                group.works.forEach(work => {
+                    const card = document.createElement('div');
+                    card.className = 'glass-panel card-hover overflow-hidden flex flex-col relative group';
+                    
+                    const workFiles = work.files || (work.file ? [work.file] : []);
+                    
+                    let mediaGalleryHtml = '';
+                    if(workFiles.length > 0) {
+                        const gridCols = workFiles.length === 1 ? 'grid-cols-1' : (workFiles.length === 2 ? 'grid-cols-2' : 'grid-cols-3');
+                        mediaGalleryHtml = `<div class="grid ${gridCols} gap-0.5 h-48 w-full overflow-hidden bg-nature-dark/60">`;
+                        
+                        workFiles.slice(0, 3).forEach((f, idx) => {
+                            const type = f.type || '';
+                            const data = f.data;
+                            const fName = f.name || 'ملف';
+                            
+                            let moreOverlay = '';
+                            if (idx === 2 && workFiles.length > 3) {
+                                moreOverlay = `<div class="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-xl">+${workFiles.length - 3}</div>`;
+                            }
+
+                            if (type.startsWith('image/')) {
+                                mediaGalleryHtml += `<div class="relative h-full w-full"><img src="${data}" class="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity" onclick="window.open('${data}')">${moreOverlay}</div>`;
+                            } else if (type.startsWith('video/')) {
+                                mediaGalleryHtml += `<div class="relative h-full w-full"><video src="${data}" class="w-full h-full object-cover bg-black" controls></video>${moreOverlay}</div>`;
+                            } else {
+                                mediaGalleryHtml += `<a href="${data}" download="${fName}" class="relative w-full h-full flex flex-col items-center justify-center bg-nature-light/20 hover:bg-nature-light/40 transition-colors text-nature-beige"><i class="fa-solid fa-file-pdf text-3xl mb-1 text-red-400"></i><span class="text-[10px] font-bold px-2 line-clamp-1">${fName}</span>${moreOverlay}</a>`;
+                            }
+                        });
+                        mediaGalleryHtml += `</div>`;
+                    }
+
+                    const delBtn = window.isPublicView ? '' : `<button onclick="removeWork('${work.id}')" class="absolute top-3 left-3 bg-red-500/80 hover:bg-red-500 text-white w-8 h-8 rounded-full shadow backdrop-blur opacity-0 group-hover:opacity-100 transition-opacity z-20 flex items-center justify-center" title="حذف الإنجاز"><i class="fa-solid fa-trash text-sm"></i></button>`;
+                    
+                    const pdfExportBtn = `<button onclick="exportSingleWorkPDF('${work.id}')" class="text-xs bg-nature-brown hover:bg-nature-brown/80 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" title="تصدير تقرير لهذا الإنجاز">
+                        <i class="fa-solid fa-file-pdf"></i> تقرير
+                    </button>`;
+
+                    card.innerHTML = `
+                        <div class="relative border-b border-nature-light/20 w-full h-48">
+                            ${mediaGalleryHtml}
+                            <div class="absolute top-3 right-3 bg-nature-dark/85 backdrop-blur text-nature-beige px-3 py-1 rounded-full text-xs font-bold border border-nature-light/30 shadow z-10 pointer-events-none">
+                                <i class="fa-regular fa-calendar ml-1"></i> ${work.date || group.year}
+                            </div>
+                            ${delBtn}
+                        </div>
+                        <div class="p-5 flex-grow flex flex-col bg-gradient-to-b from-transparent to-nature-dark/60">
+                            <div class="flex justify-between items-start mb-3 gap-2">
+                                <h3 class="font-bold text-xl text-nature-beige line-clamp-1 flex-grow">${work.title}</h3>
+                                ${pdfExportBtn}
+                            </div>
+                            <p class="text-nature-beige/85 text-sm leading-relaxed whitespace-pre-line line-clamp-4">${work.description}</p>
+                        </div>
+                    `;
+                    gridDiv.appendChild(card);
+                });
+
+                sectionEl.appendChild(gridDiv);
+                container.appendChild(sectionEl);
             });
         }
 
@@ -886,7 +998,7 @@
             const reportContainer = document.createElement('div');
             reportContainer.style.padding = '40px';
             reportContainer.style.background = '#ffffff';
-            reportContainer.style.color = '#1c2d24';
+            reportContainer.style.color = '#15241c';
             reportContainer.style.fontFamily = 'Tajawal, sans-serif';
             reportContainer.style.direction = 'rtl';
             reportContainer.style.width = '800px';
@@ -900,17 +1012,17 @@
             });
 
             reportContainer.innerHTML = `
-                <div style="border-bottom: 3px solid #5e7d69; padding-bottom: 20px; margin-bottom: 30px; text-align: center;">
-                    <h1 style="color: #2a4537; margin-bottom: 10px; font-size: 28px;">تقرير إنجاز: ${work.title}</h1>
-                    <p style="color: #5e7d69; font-size: 16px;"><strong>السنة:</strong> ${work.year}</p>
-                    <p style="color: #7a5a41; font-size: 16px;"><strong>الاسم:</strong> ${window.profileData.name || 'غير محدد'} | <strong>الجهة:</strong> ${window.profileData.org || 'غير محدد'}</p>
+                <div style="border-bottom: 3px solid #516f5d; padding-bottom: 20px; margin-bottom: 30px; text-align: center;">
+                    <h1 style="color: #20372b; margin-bottom: 10px; font-size: 28px;">تقرير إنجاز: ${work.title}</h1>
+                    <p style="color: #516f5d; font-size: 16px;"><strong>التاريخ:</strong> ${work.date || work.year}</p>
+                    <p style="color: #6d4f38; font-size: 16px;"><strong>الاسم:</strong> ${window.profileData.name || 'غير محدد'} | <strong>الجهة:</strong> ${window.profileData.org || 'غير محدد'}</p>
                 </div>
                 <div style="margin-bottom: 40px;">
-                    <h3 style="color: #2a4537; font-size: 20px; border-bottom: 1px solid #dfd2c1; padding-bottom: 10px; margin-bottom: 15px;">الوصف والتوضيح الشامل</h3>
+                    <h3 style="color: #20372b; font-size: 20px; border-bottom: 1px solid #e6dcd0; padding-bottom: 10px; margin-bottom: 15px;">الوصف والتوضيح الشامل</h3>
                     <p style="font-size: 15px; line-height: 1.8; color: #333; white-space: pre-line;">${work.description}</p>
                 </div>
                 <div>
-                    <h3 style="color: #2a4537; font-size: 20px; border-bottom: 1px solid #dfd2c1; padding-bottom: 10px; margin-bottom: 20px;">الشواهد المرفقة (صور)</h3>
+                    <h3 style="color: #20372b; font-size: 20px; border-bottom: 1px solid #e6dcd0; padding-bottom: 10px; margin-bottom: 20px;">الشواهد المرفقة (صور)</h3>
                     <div style="text-align: center;">
                         ${imagesHtml || '<p style="color: #777;">لا توجد شواهد صور قابلة للطباعة.</p>'}
                     </div>
@@ -960,6 +1072,15 @@
             });
         }
 
+        function openStandalonePreview() {
+            if(window.worksData.length === 0) {
+                showToast('لا توجد أعمال لعرضها في المنصة بعد!', 'info');
+            }
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('view', 'public');
+            window.open(currentUrl.toString(), '_blank');
+        }
+
         async function generatePublicLink() {
             if(window.worksData.length === 0) {
                 showToast('لا توجد أعمال لنشرها!', 'error');
@@ -993,7 +1114,7 @@
             if (gatewayView) gatewayView.classList.add('hidden');
             if (dashboardView) {
                 dashboardView.classList.remove('hidden');
-                dashboardView.classList.add('flex');
+                dashboardView.classList.add('flex', 'animate-fade');
             }
             if (adminPanel) adminPanel.classList.add('hidden');
             if (headerActions) headerActions.classList.add('hidden');
@@ -1005,10 +1126,10 @@
             
             const headerTitle = document.querySelector('header h1');
             if (headerTitle) {
-                headerTitle.innerHTML += ' <span class="text-xs bg-nature-brown text-white px-2 py-1 rounded ml-3 align-middle">وضع الزائر</span>';
+                headerTitle.innerHTML += ' <span class="text-xs bg-nature-brown text-white px-2.5 py-1 rounded-full ml-3 align-middle shadow">وضع الزائر المعتمد</span>';
             }
             
-            showToast('أنت تتصفح ملف إنجاز معتمد', 'info');
+            showToast('أنت تتصفح المنصة كزائر', 'info');
         }
 
         function openProfileModal() {
