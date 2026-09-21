@@ -221,7 +221,6 @@
         window.dbAddWork = async (workObj) => {
             const newWork = { id: 'work_' + Date.now(), ...workObj };
             window.worksData.push(newWork);
-            // ترتيب تنازلي حسب التاريخ والوقت
             window.worksData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             try {
                 localStorage.setItem('nature_works_v2', JSON.stringify(window.worksData));
@@ -275,8 +274,6 @@
     </div>
 
     <div id="dashboardView" class="hidden flex-grow flex flex-col relative z-10">
-        
-        <!-- Header -->
         <header class="glass-panel rounded-b-3xl mb-8 mx-4 mt-2 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4 sticky top-2 z-30 animate-fade">
             <div class="flex items-center gap-3 text-nature-beige">
                 <i class="fa-brands fa-envira text-3xl text-nature-light"></i>
@@ -303,7 +300,6 @@
 
         <main class="container mx-auto px-4 pb-16 flex-grow flex flex-col lg:flex-row gap-8 items-start">
             
-            <!-- Left Panel: Add New Work Form -->
             <div id="adminPanel" class="w-full lg:w-1/3 glass-panel p-6 sticky top-28 animate-fade">
                 <h2 class="text-xl font-bold mb-6 text-nature-beige border-b border-nature-light/30 pb-3 flex items-center gap-2">
                     <i class="fa-solid fa-seedling text-nature-light"></i> غرس إنجاز جديد
@@ -371,7 +367,6 @@
 
             <div id="portfolio-content" class="w-full lg:w-2/3 flex flex-col transition-all duration-500 animate-fade">
                 
-                <!-- Profile Display Card -->
                 <div id="profileDisplayCard" class="glass-panel p-6 mb-6 hidden items-center justify-between gap-6 relative overflow-hidden">
                     <div class="absolute -right-10 -top-10 text-nature-light/20 opacity-20 pointer-events-none"><i class="fa-solid fa-fingerprint text-9xl"></i></div>
                     
@@ -389,7 +384,6 @@
                     </div>
                 </div>
 
-                <!-- Stats & Search Bar -->
                 <div class="glass-panel p-4 mb-6 flex flex-wrap justify-between items-center gap-4" id="statsBar">
                     <div class="flex items-center gap-4">
                         <div class="bg-nature-light/25 text-nature-beige w-12 h-12 rounded-2xl flex justify-center items-center font-bold text-xl border border-nature-light/30 shadow-inner" id="totalWorks">0</div>
@@ -400,14 +394,12 @@
                     </div>
                     
                     <div class="flex flex-wrap items-center gap-3">
-                        <!-- Search Bar -->
                         <div class="relative">
-                            <i class="fa-solid fa-magnifying glass text-nature-light absolute right-3.5 top-3 text-sm"></i>
+                            <i class="fa-solid fa-magnifying-glass text-nature-light absolute right-3.5 top-3 text-sm"></i>
                             <input type="text" id="searchInput" oninput="renderWorks()" placeholder="بحث في الإنجازات..." 
                                    class="pr-9 pl-4 py-2 rounded-xl bg-nature-dark/60 border border-nature-light/30 text-nature-beige text-sm outline-none focus:border-nature-beige w-44 md:w-56 placeholder-nature-light/50">
                         </div>
 
-                        <!-- Year Filter -->
                         <div class="flex items-center gap-2 bg-nature-dark/60 px-3.5 py-2 rounded-xl border border-nature-light/30">
                             <i class="fa-solid fa-filter text-nature-light text-sm"></i>
                             <select id="yearFilter" onchange="renderWorks()" class="bg-transparent text-nature-beige outline-none text-sm font-medium cursor-pointer">
@@ -417,7 +409,6 @@
                     </div>
                 </div>
 
-                <!-- Works Timeline / Grid Container -->
                 <div id="worksTimelineContainer" class="flex flex-col gap-8 pb-10">
                     <div id="emptyState" class="flex flex-col items-center justify-center py-24 text-nature-light text-center glass-panel">
                         <i class="fa-brands fa-pagelines text-6xl mb-4 opacity-50"></i>
@@ -646,14 +637,13 @@
                 const apiKey = ""; 
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
                 
-                const systemPrompt = `أنت خبير محترف ومستشار إداري في صياغة تقارير ملفات الإنجاز وتقييم الأداء. 
-قم بصياغة وصف مختصر ومقنع بناءً على عنوان العمل يغطي بدقة العناصر التالية:
+                const systemPrompt = `أنت مستشار إداري خبير. بناءً على عنوان العمل المدخل، قم بصياغة وصف مختصر ومرتب يوضح بدقة وبشكل مباشر العناصر التالية:
 1. نبذة عن التقييم الذاتي وأهميته.
 2. سبب الطلب والهدف منه.
 3. المتعلقات (الوثائق أو الشواهد المرتبطة به).
 4. المشكلات والعواقب التي نقع فيها في حال عدم إتمام التقييم في وقته.
 
-اكتب النص بصياغة احترافية ومنظمة بأسلوب فقرات واضحة ومباشرة بدون مقدمات مطولة.`;
+اكتب النص بصياغة احترافية ومنظمة بدون مقدمات مطولة.`;
                 
                 const payload = {
                     contents: [{ parts: [{ text: `عنوان العمل: ${title}` }] }],
@@ -715,7 +705,7 @@
                 const apiKey = ""; 
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
                 
-                const systemPrompt = "أنت خبير محتوى احترافي. قم بكتابة تقرير شامل يوضح نبذة عن التقييم، السبب، المتعلقات، والمخاطر في حال عدم التقييم بناءً على عنوان العمل والشواهد المرئية المرفقة.";
+                const systemPrompt = "أنت خبير محتوى احترافي. قم بكتابة تقرير شامل يوضح نبذة عن التقييم الذاتي، سبب الطلب، المتعلقات، والمخاطر في حال عدم إتمام التقييم في وقته بناءً على العنوان والشواهد المرئية المرفقة.";
                 
                 const parts = [
                     { text: `عنوان العمل: ${title}\nقم بوصف هذا الإنجاز وتحليله بدقة بناءً على الشواهد المرفقة.` }
@@ -854,13 +844,11 @@
             
             let filtered = [...window.worksData];
             
-            // Filter by Year
             const selectedYear = yearFilter ? yearFilter.value : 'all';
             if(selectedYear !== 'all') {
                 filtered = filtered.filter(w => w.year == selectedYear);
             }
             
-            // Filter by Search Query
             const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
             if(query) {
                 filtered = filtered.filter(w => 
@@ -884,7 +872,6 @@
                 empty.style.display = 'none';
             }
 
-            // Group by Year and Month (e.g., "2026-3" -> March 2026)
             const grouped = {};
             filtered.forEach(work => {
                 const y = work.year || new Date().getFullYear();
@@ -896,7 +883,6 @@
                 grouped[key].works.push(work);
             });
 
-            // Sort group keys descending (newest year/month first)
             const sortedKeys = Object.keys(grouped).sort((a, b) => {
                 const [y1, m1] = a.split('-').map(Number);
                 const [y2, m2] = b.split('-').map(Number);
@@ -908,7 +894,6 @@
                 const group = grouped[key];
                 const monthName = getMonthName(group.month);
                 
-                // Month Section Header
                 const sectionEl = document.createElement('div');
                 sectionEl.className = 'flex flex-col gap-4 animate-fade';
                 
@@ -923,7 +908,6 @@
                     </div>
                 `;
 
-                // Grid of cards for this month
                 const gridDiv = document.createElement('div');
                 gridDiv.className = 'grid grid-cols-1 md:grid-cols-2 gap-6';
 
@@ -952,8 +936,10 @@
                                 mediaGalleryHtml += `<div class="relative h-full w-full"><img src="${data}" class="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity" onclick="window.open('${data}')">${moreOverlay}</div>`;
                             } else if (type.startsWith('video/')) {
                                 mediaGalleryHtml += `<div class="relative h-full w-full"><video src="${data}" class="w-full h-full object-cover bg-black" controls></video>${moreOverlay}</div>`;
+                            } else if (type === 'application/pdf' || fName.endsWith('.pdf')) {
+                                mediaGalleryHtml += `<div class="relative h-full w-full flex flex-col items-center justify-center bg-nature-light/20 hover:bg-nature-light/40 transition-colors p-2"><i class="fa-solid fa-file-pdf text-3xl mb-1 text-red-400"></i><a href="${data}" target="_blank" class="text-[11px] font-bold text-nature-beige underline line-clamp-1">${fName}</a>${moreOverlay}</div>`;
                             } else {
-                                mediaGalleryHtml += `<a href="${data}" download="${fName}" class="relative w-full h-full flex flex-col items-center justify-center bg-nature-light/20 hover:bg-nature-light/40 transition-colors text-nature-beige"><i class="fa-solid fa-file-pdf text-3xl mb-1 text-red-400"></i><span class="text-[10px] font-bold px-2 line-clamp-1">${fName}</span>${moreOverlay}</a>`;
+                                mediaGalleryHtml += `<div class="relative h-full w-full flex flex-col items-center justify-center bg-nature-light/25 p-2"><i class="fa-solid fa-file-lines text-2xl text-gray-300"></i><a href="${data}" target="_blank" class="text-[11px] font-bold text-nature-beige underline line-clamp-1">${fName}</a>${moreOverlay}</div>`;
                             }
                         });
                         mediaGalleryHtml += `</div>`;
@@ -993,38 +979,54 @@
             const work = window.worksData.find(w => w.id === workId);
             if(!work) return;
             
-            showToast('جاري تجهيز التقرير... يرجى الانتظار', 'info');
+            showToast('جاري تجهيز التقرير الاحترافي... يرجى الانتظار', 'info');
             
             const reportContainer = document.createElement('div');
-            reportContainer.style.padding = '40px';
+            reportContainer.style.padding = '30px';
             reportContainer.style.background = '#ffffff';
             reportContainer.style.color = '#15241c';
             reportContainer.style.fontFamily = 'Tajawal, sans-serif';
             reportContainer.style.direction = 'rtl';
-            reportContainer.style.width = '800px';
+            reportContainer.style.width = '750px';
+            reportContainer.style.margin = '0 auto';
             
             const workFiles = work.files || (work.file ? [work.file] : []);
             let imagesHtml = '';
+            let filesLinksHtml = '';
+
             workFiles.forEach(f => {
                 if(f.type.startsWith('image/')) {
-                    imagesHtml += `<img src="${f.data}" style="max-width: 100%; max-height: 350px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-block; margin-left: 10px;">`;
+                    imagesHtml += `<div style="margin-bottom: 15px; text-align: center;"><img src="${f.data}" style="max-width: 100%; max-height: 280px; border-radius: 8px; border: 1px solid #ddd; object-fit: contain;"></div>`;
+                } else {
+                    filesLinksHtml += `<li style="margin-bottom: 5px;"><a href="${f.data}" target="_blank" style="color: #20372b; text-decoration: underline; font-weight: bold;">${f.name} (انقر لفتح الملف المرفق)</a></li>`;
                 }
             });
 
+            const empName = window.profileData.name || 'غير محدد';
+            const empOrg = window.profileData.org || 'غير محدد';
+            const empDate = window.profileData.date || 'غير محدد';
+
             reportContainer.innerHTML = `
-                <div style="border-bottom: 3px solid #516f5d; padding-bottom: 20px; margin-bottom: 30px; text-align: center;">
-                    <h1 style="color: #20372b; margin-bottom: 10px; font-size: 28px;">تقرير إنجاز: ${work.title}</h1>
-                    <p style="color: #516f5d; font-size: 16px;"><strong>التاريخ:</strong> ${work.date || work.year}</p>
-                    <p style="color: #6d4f38; font-size: 16px;"><strong>الاسم:</strong> ${window.profileData.name || 'غير محدد'} | <strong>الجهة:</strong> ${window.profileData.org || 'غير محدد'}</p>
+                <div style="border-bottom: 2px solid #516f5d; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="color: #20372b; margin: 0 0 8px 0; font-size: 24px;">تقرير إنجاز: ${work.title}</h1>
+                        <p style="color: #516f5d; margin: 0; font-size: 14px;"><strong>تاريخ الإنجاز:</strong> ${work.date || work.year}</p>
+                    </div>
+                    <div style="text-align: left; font-size: 13px; color: #444;">
+                        <p style="margin: 0 0 4px 0;"><strong>الاسم:</strong> ${empName}</p>
+                        <p style="margin: 0 0 4px 0;"><strong>الجهة:</strong> ${empOrg}</p>
+                        <p style="margin: 0;"><strong>تاريخ التعيين:</strong> ${empDate}</p>
+                    </div>
                 </div>
-                <div style="margin-bottom: 40px;">
-                    <h3 style="color: #20372b; font-size: 20px; border-bottom: 1px solid #e6dcd0; padding-bottom: 10px; margin-bottom: 15px;">الوصف والتوضيح الشامل</h3>
-                    <p style="font-size: 15px; line-height: 1.8; color: #333; white-space: pre-line;">${work.description}</p>
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #20372b; font-size: 18px; border-bottom: 1px solid #e6dcd0; padding-bottom: 8px; margin-bottom: 12px;">الوصف والتوضيح الشامل</h3>
+                    <p style="font-size: 14px; line-height: 1.7; color: #333; white-space: pre-line; margin: 0;">${work.description}</p>
                 </div>
+                ${filesLinksHtml ? `<div style="margin-bottom: 25px;"><h3 style="color: #20372b; font-size: 18px; border-bottom: 1px solid #e6dcd0; padding-bottom: 8px; margin-bottom: 12px;">المستندات والملفات المرفقة</h3><ul style="padding-right: 20px; font-size: 14px;">${filesLinksHtml}</ul></div>` : ''}
                 <div>
-                    <h3 style="color: #20372b; font-size: 20px; border-bottom: 1px solid #e6dcd0; padding-bottom: 10px; margin-bottom: 20px;">الشواهد المرفقة (صور)</h3>
-                    <div style="text-align: center;">
-                        ${imagesHtml || '<p style="color: #777;">لا توجد شواهد صور قابلة للطباعة.</p>'}
+                    <h3 style="color: #20372b; font-size: 18px; border-bottom: 1px solid #e6dcd0; padding-bottom: 8px; margin-bottom: 15px;">الشواهد المرئية المرفقة</h3>
+                    <div>
+                        ${imagesHtml || '<p style="color: #777; font-size: 14px;">لا توجد صور شواهد مرفقة لهذا الإنجاز.</p>'}
                     </div>
                 </div>
             `;
@@ -1034,7 +1036,7 @@
             const opt = {
                 margin:       10,
                 filename:     `تقرير_${work.title.substring(0, 15)}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
+                image:        { type: 'jpeg', quality: 0.95 },
                 html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
@@ -1060,7 +1062,7 @@
             const opt = {
                 margin:       10,
                 filename:     `Portfolio_${window.profileData.name || 'Works'}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
+                image:        { type: 'jpeg', quality: 0.95 },
                 html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
