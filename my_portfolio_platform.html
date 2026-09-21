@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة ملف أعمالي | Portfolio Platform</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f3f4f6; /* bg-gray-100 */
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+
+        .work-card {
+            transition: all 0.3s ease;
+        }
+        
+        .work-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8; 
+        }
+
+        /* Loader Animation */
+        .ai-loader {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            transition: transform 0.3s ease-out;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast.success { background-color: #10b981; }
+        .toast.error { background-color: #ef4444; }
+        
+        /* New Styles for Media & Profile */
+        .media-icon-container {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; background: #f8fafc; padding: 1rem; text-align: center;
+        }
+        .media-icon { font-size: 3.5rem; margin-bottom: 0.5rem; }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #6366f1; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <header class="bg-indigo-600 text-white shadow-md relative z-10">
+        <div class="container mx-auto px-4 py-6 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-briefcase text-2xl"></i>
+                <h1 class="text-2xl font-bold tracking-wide">منصة ملف أعمالي</h1>
+            </div>
+            <div class="flex gap-2" id="headerActions">
+                <button onclick="copyPublicLink()" class="text-sm bg-white text-indigo-600 px-4 py-2 rounded-full shadow-inner font-bold hover:bg-indigo-50 transition-colors flex items-center gap-2" title="توليد رابط عام للمشاركة">
+                    <i class="fa-solid fa-link"></i>
+                    بوابتك لعرض إنجازاتك
+                </button>
+                <button onclick="openProfileModal()" class="text-sm bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded-full shadow font-medium transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-user-gear"></i>
+                    لوحة التحكم
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 flex-grow flex flex-col lg:flex-row gap-8 items-start">
+        
+        <!-- Left Panel: Add New Work Form -->
+        <div id="adminPanel" class="w-full lg:w-1/3 glass-panel rounded-2xl p-6 sticky top-8 transition-all duration-300">
+            <h2 class="text-xl font-bold mb-6 text-gray-800 border-b pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-plus-circle text-indigo-600"></i>
+                إضافة عمل جديد
+            </h2>
+            
+            <form id="workForm" class="space-y-5">
+                
+                <!-- Title Field -->
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-gray-700">عنوان العمل</label>
+                    <input type="text" id="workTitle" placeholder="مثال: تصميم الهوية البصرية لشركة تقنية" 
+                           class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                </div>
+
+                <!-- AI Description Feature -->
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <label class="block text-sm font-semibold text-gray-700">وصف العمل</label>
+                        <button type="button" id="aiBtn" onclick="generateSmartDescription()" 
+                                class="text-xs bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-3 py-1.5 rounded flex items-center gap-1.5 hover:shadow-lg transition-all active:scale-95">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span id="aiBtnText">اقتراح وصف احترافي</span>
+                        </button>
+                    </div>
+                    <textarea id="workDesc" rows="4" placeholder="اكتب وصفاً مفصلاً لعملك، أو استخدم الذكاء الاصطناعي لاقتراح وصف بناءً على العنوان..." 
+                              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none"></textarea>
+                </div>
+
+                <!-- Year Field -->
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-gray-700">سنة الإنجاز</label>
+                    <input type="number" id="workYear" min="1990" max="2100" placeholder="2024" 
+                           class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                </div>
+
+                <!-- Attachment / File Upload -->
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-gray-700">المرفقات (صور، فيديو، PDF، MD)</label>
+                    <div class="relative w-full h-32 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 transition-colors bg-gray-50 flex justify-center items-center overflow-hidden group cursor-pointer" onclick="document.getElementById('workFile').click()">
+                        
+                        <input type="file" id="workFile" accept="image/*,video/*,application/pdf,.md" class="hidden" onchange="previewFile(event)">
+                        
+                        <div id="uploadPlaceholder" class="text-center text-gray-400 group-hover:text-indigo-500 transition-colors p-4">
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl mb-2"></i>
+                            <p class="text-sm font-medium">اضغط لرفع المرفق</p>
+                        </div>
+                        
+                        <div id="filePreviewContainer" class="hidden absolute inset-0 w-full h-full bg-white flex justify-center items-center">
+                             <!-- Preview content goes here dynamically -->
+                        </div>
+                        
+                        <!-- Overlay for removing file -->
+                        <div id="removeFileBtn" class="hidden absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center text-white" onclick="event.stopPropagation(); removePreview();">
+                            <i class="fa-solid fa-trash-can text-2xl hover:text-red-400 transition-colors"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2 mt-4">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    حفظ في سجل الأعمال
+                </button>
+            </form>
+        </div>
+
+        <!-- Right Panel: Display Works Gallery -->
+        <div id="galleryPanel" class="w-full lg:w-2/3 flex flex-col transition-all duration-500">
+            
+            <!-- Profile Display Card (Hidden by default until data is entered) -->
+            <div id="profileDisplayCard" class="glass-panel rounded-xl p-5 mb-6 hidden items-center gap-5 border-r-4 border-indigo-500 relative">
+                <img id="displayPhoto" src="" alt="الموظف" class="profile-avatar shadow-md">
+                <div class="flex-grow">
+                    <h2 id="displayName" class="text-2xl font-bold text-gray-800 mb-1"></h2>
+                    <p id="displayOrg" class="text-indigo-600 font-medium flex items-center gap-2"><i class="fa-solid fa-building"></i> <span></span></p>
+                    <p id="displayDate" class="text-sm text-gray-500 mt-1 flex items-center gap-2"><i class="fa-solid fa-calendar-check"></i> <span></span></p>
+                </div>
+            </div>
+
+            <!-- Filter & Stats Bar -->
+            <div class="glass-panel rounded-xl p-4 mb-6 flex flex-wrap justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-indigo-100 text-indigo-700 w-10 h-10 rounded-full flex justify-center items-center font-bold text-lg" id="totalWorks">0</div>
+                    <div>
+                        <h3 class="font-bold text-gray-800">إجمالي الأعمال</h3>
+                        <p class="text-xs text-gray-500">المرفوعة في المنصة</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-semibold text-gray-700"><i class="fa-solid fa-filter text-indigo-500"></i> تصفية بالسنة:</label>
+                    <select id="yearFilter" onchange="filterWorks()" class="px-3 py-1.5 rounded border border-gray-300 focus:border-indigo-500 outline-none bg-white min-w-[100px]">
+                        <option value="all">الكل</option>
+                        <!-- Options generated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Works Grid -->
+            <div id="worksGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-10">
+                <!-- Empty State (Default) -->
+                <div id="emptyState" class="col-span-1 md:col-span-2 flex flex-col items-center justify-center py-20 text-gray-400 text-center">
+                    <i class="fa-regular fa-folder-open text-6xl mb-4 text-gray-300"></i>
+                    <h3 class="text-xl font-bold text-gray-500 mb-2">لا توجد أعمال لعرضها</h3>
+                    <p class="text-sm">قم بإضافة أعمالك الأولى من القائمة الجانبية لتظهر هنا.</p>
+                </div>
+                <!-- Dynamic Work Cards will be inserted here -->
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">
+        <i id="toastIcon" class="fa-solid fa-circle-check"></i>
+        <span id="toastMsg">تمت العملية بنجاح</span>
+    </div>
+
+    <!-- Profile Modal (لوحة التحكم) -->
+    <div id="profileModal" class="fixed inset-0 bg-black/60 hidden z-50 flex justify-center items-center backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md m-4 shadow-2xl relative">
+            <button onclick="closeProfileModal()" class="absolute top-4 left-4 text-gray-400 hover:text-red-500 transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h2 class="text-xl font-bold mb-4 text-gray-800 border-b pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-user-tie text-indigo-600"></i> بيانات الموظف والمنشأة
+            </h2>
+            <form id="profileForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700">اسم الموظف</label>
+                    <input type="text" id="profName" placeholder="أدخل اسمك الكريم" class="w-full px-4 py-2 rounded-lg border focus:border-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700">جهة العمل / المنشأة</label>
+                    <input type="text" id="profOrg" placeholder="مثال: وزارة التقنية، شركة إكس..." class="w-full px-4 py-2 rounded-lg border focus:border-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700">تاريخ التعيين</label>
+                    <input type="date" id="profDate" class="w-full px-4 py-2 rounded-lg border focus:border-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700">صورة الموظف (اختياري)</label>
+                    <input type="file" id="profPhoto" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                </div>
+                <button type="button" onclick="saveProfile()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg shadow-md transition-all mt-2">
+                    <i class="fa-solid fa-check-circle mr-1"></i> حفظ البيانات
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let works = [];
+        let profile = { name: '', org: '', date: '', photo: '' };
+        let currentFile = null; // { data: base64, type: string, name: string }
+        
+        // المتصفحات تتيح عادة ~5MB للمساحة المحلية، سنضع حداً للملف الواحد لتفادي انهيار الحفظ (حوالي 2MB)
+        const MAX_FILE_SIZE = 2.5 * 1024 * 1024; 
+
+        // Check if we are in public view mode via URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const isPublicView = urlParams.get('view') === 'public';
+
+        // Set default year to current year
+        document.getElementById('workYear').value = new Date().getFullYear();
+
+        function init() {
+            // Load works from localStorage
+            const savedWorks = localStorage.getItem('portfolio_works');
+            if (savedWorks) works = JSON.parse(savedWorks);
+            
+            // Load profile from localStorage
+            const savedProfile = localStorage.getItem('portfolio_profile');
+            if (savedProfile) {
+                profile = JSON.parse(savedProfile);
+                updateProfileDisplay();
+            }
+
+            // Apply View Mode (Hide editing features for visitors)
+            if (isPublicView) {
+                enablePublicView();
+            }
+
+            updateYearFilterDropdown();
+            renderWorks('all');
+        }
+
+        function enablePublicView() {
+            // إخفاء القوائم الجانبية وأزرار التحكم
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('headerActions').classList.add('hidden');
+            
+            // توسيع معرض الأعمال لملأ الشاشة
+            const gallery = document.getElementById('galleryPanel');
+            gallery.classList.remove('lg:w-2/3');
+            gallery.classList.add('w-full', 'max-w-6xl', 'mx-auto');
+            
+            setTimeout(() => showNotification('أنت الآن في وضع العرض المخصص للزوار', 'info'), 500);
+        }
+
+        function copyPublicLink() {
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('view', 'public');
+            
+            // Fallback for clipboard if navigator.clipboard is blocked
+            try {
+                const tempInput = document.createElement('input');
+                tempInput.value = currentUrl.toString();
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                showNotification('تم نسخ رابط منصتك بنجاح! شاركه الآن مع عملائك.', 'success');
+            } catch (err) {
+                showNotification('فشل النسخ التلقائي. انسخ الرابط من شريط العنوان في الأعلى', 'error');
+            }
+        }
+
+        function openProfileModal() {
+            document.getElementById('profName').value = profile.name || '';
+            document.getElementById('profOrg').value = profile.org || '';
+            document.getElementById('profDate').value = profile.date || '';
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        function saveProfile() {
+            profile.name = document.getElementById('profName').value.trim();
+            profile.org = document.getElementById('profOrg').value.trim();
+            profile.date = document.getElementById('profDate').value;
+            
+            const photoInput = document.getElementById('profPhoto');
+            if (photoInput.files && photoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profile.photo = e.target.result;
+                    finalizeSaveProfile();
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                finalizeSaveProfile();
+            }
+        }
+
+        function finalizeSaveProfile() {
+            try {
+                localStorage.setItem('portfolio_profile', JSON.stringify(profile));
+                updateProfileDisplay();
+                closeProfileModal();
+                showNotification('تم تحديث بياناتك بنجاح', 'success');
+            } catch(e) {
+                showNotification('خطأ: الصورة الشخصية كبيرة جداً!', 'error');
+            }
+        }
+
+        function updateProfileDisplay() {
+            const card = document.getElementById('profileDisplayCard');
+            // إخفاء البطاقة إذا لم يتم إدخال بيانات أساسية
+            if (!profile.name && !profile.org) {
+                card.classList.add('hidden');
+                card.classList.remove('flex');
+                return;
+            }
+            
+            card.classList.remove('hidden');
+            card.classList.add('flex'); 
+            
+            document.getElementById('displayName').innerText = profile.name || 'موظف مبدع';
+            document.getElementById('displayOrg').querySelector('span').innerText = profile.org || 'لم يتم تحديد جهة العمل';
+            document.getElementById('displayDate').querySelector('span').innerText = profile.date ? `تاريخ التعيين: ${profile.date}` : 'تاريخ التعيين غير محدد';
+            
+            const photoEl = document.getElementById('displayPhoto');
+            if (profile.photo) {
+                photoEl.src = profile.photo;
+            } else {
+                // صورة افتراضية بالاعتماد على الاسم
+                photoEl.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(profile.name || 'M') + '&background=6366f1&color=fff';
+            }
+        }
+
+        function showNotification(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+            
+            toastMsg.innerText = msg;
+            
+            if (type === 'success') {
+                toast.className = 'toast show success';
+                toastIcon.className = 'fa-solid fa-circle-check';
+            } else if (type === 'error') {
+                toast.className = 'toast show error';
+                toastIcon.className = 'fa-solid fa-circle-exclamation';
+            } else {
+                toast.className = 'toast show';
+                toastIcon.className = 'fa-solid fa-info-circle';
+            }
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function previewFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // حماية المتصفح من امتلاء مساحة الذاكرة
+            if (file.size > MAX_FILE_SIZE) {
+                showNotification('حجم الملف كبير جداً! (الحد الأقصى للتجربة هو 2.5MB)', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let fileType = file.type;
+                if (!fileType) {
+                    // Fallback extensions parsing
+                    if (file.name.endsWith('.md')) fileType = 'text/markdown';
+                    else fileType = 'unknown';
+                }
+
+                currentFile = {
+                    data: e.target.result,
+                    type: fileType,
+                    name: file.name
+                };
+
+                renderPreviewBox();
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function renderPreviewBox() {
+            const container = document.getElementById('filePreviewContainer');
+            const placeholder = document.getElementById('uploadPlaceholder');
+            const removeBtn = document.getElementById('removeFileBtn');
+            
+            container.innerHTML = '';
+            
+            // تحديد طريقة العرض في المربع المصغر حسب النوع
+            if (currentFile.type.startsWith('image/')) {
+                container.innerHTML = `<img src="${currentFile.data}" class="w-full h-full object-cover">`;
+            } else if (currentFile.type.startsWith('video/')) {
+                container.innerHTML = `<div class="media-icon-container"><i class="fa-solid fa-file-video media-icon text-blue-500"></i><span class="text-xs font-bold text-gray-600 truncate w-full px-2">${currentFile.name}</span></div>`;
+            } else if (currentFile.type === 'application/pdf') {
+                container.innerHTML = `<div class="media-icon-container"><i class="fa-solid fa-file-pdf media-icon text-red-500"></i><span class="text-xs font-bold text-gray-600 truncate w-full px-2">${currentFile.name}</span></div>`;
+            } else {
+                container.innerHTML = `<div class="media-icon-container"><i class="fa-brands fa-markdown media-icon text-gray-800"></i><span class="text-xs font-bold text-gray-600 truncate w-full px-2">${currentFile.name}</span></div>`;
+            }
+            
+            container.classList.remove('hidden');
+            removeBtn.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+        }
+
+        function removePreview() {
+            currentFile = null;
+            document.getElementById('workFile').value = '';
+            document.getElementById('filePreviewContainer').classList.add('hidden');
+            document.getElementById('removeFileBtn').classList.add('hidden');
+            document.getElementById('uploadPlaceholder').classList.remove('hidden');
+        }
+
+        async function generateSmartDescription() {
+            const titleInput = document.getElementById('workTitle').value.trim();
+            if (!titleInput) {
+                showNotification('يرجى كتابة عنوان العمل أولاً لكي يستطيع الذكاء الاصطناعي فهمه', 'error');
+                document.getElementById('workTitle').focus();
+                return;
+            }
+
+            const aiBtn = document.getElementById('aiBtn');
+            const aiBtnText = document.getElementById('aiBtnText');
+            
+            aiBtn.disabled = true;
+            aiBtn.classList.add('opacity-80', 'cursor-not-allowed');
+            aiBtnText.innerHTML = '<span class="ai-loader"></span> جاري الصياغة...';
+
+            try {
+                const systemPrompt = `أنت خبير في كتابة محتوى ملفات الأعمال (Portfolio). 
+المستخدم سيعطيك عنواناً لعمل قام به. 
+مهمتك: كتابة وصف قصير، احترافي، وجذاب باللغة العربية (حوالي 2-3 أسطر) يصف هذا العمل ليتم عرضه في المنصة. 
+استخدم لغة تسويقية تبرز قيمة العمل. لا تضف أي مقدمات أو خاتمات، فقط الوصف المباشر.`;
+
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: titleInput }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error('فشل الاتصال');
+
+                const result = await response.json();
+                const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (generatedText) {
+                    document.getElementById('workDesc').value = generatedText.trim();
+                    showNotification('تم اقتراح الوصف بنجاح', 'success');
+                } else {
+                    throw new Error('No text generated');
+                }
+
+            } catch (error) {
+                showNotification('عذراً، حدث خطأ أثناء التوليد. حاول مجدداً.', 'error');
+            } finally {
+                aiBtn.disabled = false;
+                aiBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                aiBtnText.innerHTML = 'اقتراح وصف احترافي';
+            }
+        }
+
+        document.getElementById('workForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('workTitle').value.trim();
+            const desc = document.getElementById('workDesc').value.trim();
+            const year = document.getElementById('workYear').value;
+
+            if (!title || !desc || !year) {
+                showNotification('يرجى تعبئة جميع الحقول الأساسية', 'error');
+                return;
+            }
+            if (!currentFile) {
+                showNotification('يرجى إرفاق شاهد/مرفق للعمل', 'error');
+                return;
+            }
+
+            const newWork = {
+                id: Date.now().toString(),
+                title: title,
+                description: desc,
+                year: year,
+                file: currentFile, // Storing complete file object
+                dateAdded: new Date().toISOString()
+            };
+
+            works.push(newWork);
+            works.sort((a, b) => b.year - a.year);
+            
+            // Try saving to localStorage (Handles QuotaExceededError for large media)
+            try {
+                localStorage.setItem('portfolio_works', JSON.stringify(works));
+                
+                // Reset UI on success
+                this.reset();
+                document.getElementById('workYear').value = new Date().getFullYear();
+                removePreview();
+                updateYearFilterDropdown();
+                renderWorks('all');
+                document.getElementById('yearFilter').value = 'all';
+                
+                showNotification('تم إضافة العمل بنجاح!', 'success');
+            } catch (err) {
+                // If it fails, remove the item we just added
+                works = works.filter(w => w.id !== newWork.id);
+                showNotification('عفواً، مساحة التخزين ممتلئة! حاول استخدام ملف بحجم أصغر.', 'error');
+                console.error(err);
+            }
+        });
+
+        function deleteWork(id) {
+            works = works.filter(w => w.id !== id);
+            localStorage.setItem('portfolio_works', JSON.stringify(works));
+            updateYearFilterDropdown();
+            filterWorks(); // Re-render with current filter
+            showNotification('تم حذف العمل', 'success');
+        }
+
+        function updateYearFilterDropdown() {
+            const filterSelect = document.getElementById('yearFilter');
+            const currentValue = filterSelect.value;
+            
+            const years = [...new Set(works.map(w => w.year))].sort((a, b) => b - a);
+            
+            let optionsHtml = '<option value="all">الكل</option>';
+            years.forEach(year => {
+                optionsHtml += `<option value="${year}">${year}</option>`;
+            });
+            
+            filterSelect.innerHTML = optionsHtml;
+            if (currentValue === 'all' || years.includes(currentValue)) {
+                filterSelect.value = currentValue;
+            }
+        }
+
+        function filterWorks() {
+            const selectedYear = document.getElementById('yearFilter').value;
+            renderWorks(selectedYear);
+        }
+
+        function renderWorks(filterYear) {
+            const grid = document.getElementById('worksGrid');
+            const emptyState = document.getElementById('emptyState');
+            const totalStats = document.getElementById('totalWorks');
+            
+            let filteredWorks = works;
+            if (filterYear !== 'all') {
+                filteredWorks = works.filter(w => w.year === filterYear);
+            }
+            
+            totalStats.innerText = filteredWorks.length;
+            grid.innerHTML = '';
+            
+            if (filteredWorks.length === 0) {
+                grid.appendChild(emptyState);
+                emptyState.style.display = 'flex';
+                return;
+            } else {
+                emptyState.style.display = 'none';
+            }
+
+            filteredWorks.forEach(work => {
+                const card = document.createElement('div');
+                card.className = 'work-card bg-white rounded-xl overflow-hidden shadow border border-gray-100 flex flex-col group relative';
+                
+                // --- Dynamic Media Display Logic ---
+                let mediaHtml = '';
+                const type = work.file?.type || '';
+                const fileData = work.file?.data || work.image; // Fallback for old records compatibility
+                const fileName = work.file?.name || 'مرفق';
+                
+                if (type.startsWith('image/') || (!type && work.image)) {
+                    mediaHtml = `<img src="${fileData}" alt="${work.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer" onclick="window.open('${fileData}', '_blank')">`;
+                } else if (type.startsWith('video/')) {
+                    mediaHtml = `<video src="${fileData}" controls class="w-full h-full object-cover bg-black"></video>`;
+                } else if (type === 'application/pdf') {
+                    mediaHtml = `
+                    <a href="${fileData}" download="${fileName}" class="media-icon-container hover:bg-gray-100 transition-colors cursor-pointer w-full h-full text-decoration-none">
+                        <i class="fa-solid fa-file-pdf media-icon text-red-500"></i>
+                        <span class="text-sm font-bold text-gray-600 px-2 line-clamp-2 mt-2">${fileName}</span>
+                    </a>`;
+                } else {
+                    // Markdown or others
+                    mediaHtml = `
+                    <a href="${fileData}" download="${fileName}" class="media-icon-container hover:bg-gray-100 transition-colors cursor-pointer w-full h-full text-decoration-none">
+                        <i class="fa-brands fa-markdown media-icon text-gray-800"></i>
+                        <span class="text-sm font-bold text-gray-600 px-2 line-clamp-2 mt-2">${fileName}</span>
+                    </a>`;
+                }
+
+                // Show delete button ONLY if not in public view
+                const deleteBtnHtml = isPublicView ? '' : `
+                    <button onclick="deleteWork('${work.id}')" class="absolute top-3 left-3 bg-red-500/80 hover:bg-red-600 text-white w-8 h-8 rounded-full flex justify-center items-center backdrop-blur shadow opacity-0 group-hover:opacity-100 transition-opacity z-10" title="حذف العمل">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>
+                `;
+
+                card.innerHTML = `
+                    <div class="h-48 w-full overflow-hidden relative border-b border-gray-100 bg-gray-50">
+                        ${mediaHtml}
+                        <div class="absolute top-3 right-3 bg-white/90 backdrop-blur text-indigo-600 font-bold px-3 py-1 rounded-full text-xs shadow z-10 pointer-events-none">
+                            <i class="fa-regular fa-calendar ml-1"></i> ${work.year}
+                        </div>
+                        ${deleteBtnHtml}
+                    </div>
+                    <div class="p-5 flex-grow flex flex-col">
+                        <h3 class="font-bold text-lg text-gray-800 mb-2 line-clamp-1">${work.title}</h3>
+                        <p class="text-gray-600 text-sm flex-grow line-clamp-3 leading-relaxed">${work.description}</p>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Boot up the application
+        window.onload = init;
+    </script>
+</body>
+</html>
