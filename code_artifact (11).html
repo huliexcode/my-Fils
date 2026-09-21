@@ -119,143 +119,84 @@
 </head>
 <body class="antialiased flex flex-col">
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Environment Variables
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'portfolio-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        let app, db, auth;
-        let currentUser = null;
-        
-        // Globals for App logic
+    <script>
+        // المتغيرات العامة للمنصة
         window.worksData = [];
         window.profileData = { name: '', org: '', date: '', photo: '' };
         window.isPublicView = new URLSearchParams(window.location.search).get('view') === 'public';
-        window.publicUid = new URLSearchParams(window.location.search).get('uid');
+        
+        // دالة الدخول السريع للملف الإنجازي
+        function enterDashboard() {
+            const gateway = document.getElementById('gatewayView');
+            if (gateway) {
+                gateway.classList.add('transition-opacity', 'duration-500', 'opacity-0');
+                setTimeout(() => {
+                    gateway.classList.add('hidden');
+                }, 500);
+            }
+            const dashboard = document.getElementById('dashboardView');
+            if (dashboard) {
+                dashboard.classList.remove('hidden');
+            }
+        }
 
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
+        // دالة التهيئة (تعمل عند تحميل الصفحة)
+        async function initApp() {
+            try {
+                const savedWorks = localStorage.getItem('nature_works');
+                if (savedWorks) window.worksData = JSON.parse(savedWorks);
+                
+                const savedProfile = localStorage.getItem('nature_profile');
+                if (savedProfile) window.profileData = JSON.parse(savedProfile);
+            } catch(e) {
+                console.error("Error loading local data", e);
+            }
             
-            // Auth Flow
-            const authenticate = async () => {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            };
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    window.currentUser = user;
-                    if(window.isPublicView) {
-                        loadPublicPortfolio(window.publicUid);
-                    } else {
-                        // Setup Realtime Listeners for Private Data
-                        setupListeners();
-                        document.getElementById('loadingApp').classList.add('hidden');
-                        document.getElementById('gatewayView').classList.remove('hidden');
-                    }
-                }
-            });
-
-            await authenticate();
-
-        } catch (error) {
-            console.error("Firebase Init Error:", error);
-            showToast("تعذر الاتصال بقاعدة البيانات. تأكد من إعدادات النظام.", "error");
-        }
-
-        // --- Database Operations ---
-        function setupListeners() {
-            if (!currentUser) return;
-            const uid = currentUser.uid;
-
-            // Profile Listener
-            const profileRef = doc(db, 'artifacts', appId, 'users', uid, 'profile');
-            onSnapshot(profileRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    window.profileData = docSnap.data();
-                    updateProfileDisplay();
-                }
-            }, (error) => console.error("Profile listen error", error));
-
-            // Works Listener
-            const worksRef = collection(db, 'artifacts', appId, 'users', uid, 'works');
-            onSnapshot(worksRef, (snapshot) => {
-                window.worksData = [];
-                snapshot.forEach((doc) => {
-                    window.worksData.push({ id: doc.id, ...doc.data() });
-                });
-                window.worksData.sort((a, b) => b.year - a.year); // Sort in memory
-                updateYearFilterDropdown();
+            const loaderEl = document.getElementById('loadingApp');
+            if (loaderEl) loaderEl.classList.add('hidden');
+            
+            // تفعيل وضع الزائر إذا كان الرابط يحتوي على view=public
+            if (window.isPublicView) {
+                enablePublicViewMode();
+                updateProfileDisplay();
                 renderWorks('all');
-            }, (error) => console.error("Works listen error", error));
+            } else {
+                const gatewayEl = document.getElementById('gatewayView');
+                if (gatewayEl) gatewayEl.classList.remove('hidden');
+            }
         }
 
+        // محاكاة دوال قاعدة البيانات باستخدام LocalStorage
         window.dbSaveProfile = async (profileObj) => {
-            if (!currentUser) return;
-            const profileRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile');
-            await setDoc(profileRef, profileObj);
+            window.profileData = profileObj;
+            localStorage.setItem('nature_profile', JSON.stringify(profileObj));
+            updateProfileDisplay();
         };
 
         window.dbAddWork = async (workObj) => {
-            if (!currentUser) return;
-            const workId = 'work_' + Date.now();
-            const workRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'works', workId);
-            await setDoc(workRef, workObj);
+            const newWork = { id: 'work_' + Date.now(), ...workObj };
+            window.worksData.push(newWork);
+            window.worksData.sort((a, b) => b.year - a.year);
+            try {
+                localStorage.setItem('nature_works', JSON.stringify(window.worksData));
+                updateYearFilterDropdown();
+                renderWorks(document.getElementById('yearFilter')?.value || 'all');
+            } catch (e) {
+                // التراجع عن الإضافة في حال امتلاء المساحة المحلية
+                window.worksData = window.worksData.filter(w => w.id !== newWork.id);
+                throw new Error('quota_exceeded');
+            }
         };
 
         window.dbDeleteWork = async (workId) => {
-            if (!currentUser) return;
-            const workRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'works', workId);
-            await deleteDoc(workRef);
+            window.worksData = window.worksData.filter(w => w.id !== workId);
+            localStorage.setItem('nature_works', JSON.stringify(window.worksData));
+            updateYearFilterDropdown();
+            renderWorks(document.getElementById('yearFilter')?.value || 'all');
         };
 
-        window.dbPublishPortfolio = async () => {
-            if (!currentUser) return;
-            const pubRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolios', currentUser.uid);
-            await setDoc(pubRef, {
-                profile: window.profileData,
-                works: window.worksData,
-                updatedAt: new Date().toISOString()
-            });
-            return currentUser.uid;
-        };
-
-        async function loadPublicPortfolio(targetUid) {
-            if(!targetUid) {
-                showToast("رابط الملف غير صالح", "error");
-                return;
-            }
-            try {
-                const pubRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolios', targetUid);
-                const docSnap = await getDoc(pubRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    window.profileData = data.profile || {};
-                    window.worksData = data.works || [];
-                    
-                    document.getElementById('loadingApp').classList.add('hidden');
-                    enablePublicViewMode();
-                    updateProfileDisplay();
-                    renderWorks('all');
-                } else {
-                    showToast("لم يتم العثور على هذا الملف الإنجازي", "error");
-                }
-            } catch (e) {
-                console.error(e);
-                showToast("خطأ في تحميل الملف العام", "error");
-            }
-        }
+        // تشغيل دالة التهيئة عند اكتمال بناء الصفحة
+        window.addEventListener('DOMContentLoaded', initApp);
     </script>
 
     <!-- Loading Screen -->
@@ -333,31 +274,35 @@
                         </div>
                         <textarea id="workDesc" rows="4" placeholder="اكتب وصفاً، أو دع الذكاء الاصطناعي يصيغه بأسلوب إبداعي بعد كتابة العنوان..." 
                                   class="w-full px-4 py-3 rounded-xl bg-nature-dark/50 border border-nature-light/30 text-nature-beige focus:border-nature-beige outline-none transition-all resize-none placeholder-nature-light/50"></textarea>
+                        
+                        <!-- زر التوليد الذكي للتقرير بناءً على الشواهد -->
+                        <div class="mt-3 flex justify-end">
+                            <button type="button" id="aiReportBtn" onclick="triggerReportFromEvidences()" 
+                                    class="text-xs bg-nature-light/20 hover:bg-nature-light/40 text-nature-beige px-4 py-2 rounded-lg flex items-center gap-2 border border-nature-light/50 transition-all active:scale-95 shadow-sm">
+                                <i class="fa-solid fa-microchip"></i>
+                                <span id="aiReportBtnText">توليد تقرير الشواهد (AI)</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold mb-2 text-nature-beige/80">سنة الإنجاز</label>
-                        <input type="number" id="workYear" min="1990" max="2100" 
-                               class="w-full px-4 py-3 rounded-xl bg-nature-dark/50 border border-nature-light/30 text-nature-beige focus:border-nature-beige outline-none transition-all">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold mb-2 text-nature-beige/80">الشاهد (صورة، فيديو، مستند)</label>
-                        <div class="relative w-full h-32 border-2 border-dashed border-nature-light/50 rounded-xl hover:border-nature-beige transition-colors bg-nature-dark/30 flex justify-center items-center overflow-hidden group cursor-pointer" onclick="document.getElementById('workFile').click()">
+                        <label class="block text-sm font-semibold mb-2 text-nature-beige/80">الشواهد (صور، فيديو، مستند)</label>
+                        <div class="relative w-full min-h-[8rem] border-2 border-dashed border-nature-light/50 rounded-xl hover:border-nature-beige transition-colors bg-nature-dark/30 flex flex-col justify-center items-center overflow-hidden p-4 group cursor-pointer" onclick="if(event.target === this || event.target.closest('#uploadPlaceholder')) document.getElementById('workFile').click()">
                             
-                            <input type="file" id="workFile" accept="image/*,video/*,application/pdf,.md" class="hidden" onchange="previewFile(event)">
+                            <input type="file" id="workFile" accept="image/*,video/*,application/pdf,.md" multiple class="hidden" onchange="previewFiles(event)">
                             
-                            <div id="uploadPlaceholder" class="text-center text-nature-light group-hover:text-nature-beige transition-colors p-4">
+                            <div id="uploadPlaceholder" class="text-center text-nature-light group-hover:text-nature-beige transition-colors py-4">
                                 <i class="fa-solid fa-cloud-arrow-up text-3xl mb-2"></i>
-                                <p class="text-xs font-medium">الحد الأقصى للملف 700KB (لضمان سرعة الحفظ)</p>
+                                <p class="text-xs font-medium">أضف شواهد (يدعم التحديد المتعدد)</p>
+                                <p class="text-[10px] mt-1 opacity-70">الحد الأقصى للملف 1.5MB</p>
                             </div>
                             
-                            <div id="filePreviewContainer" class="hidden absolute inset-0 w-full h-full bg-nature-green flex justify-center items-center">
+                            <div id="filePreviewContainer" class="hidden w-full flex flex-wrap gap-2 justify-center items-center mt-2 relative z-10">
                                  <!-- Preview content -->
                             </div>
                             
-                            <div id="removeFileBtn" class="hidden absolute inset-0 bg-black/60 flex justify-center items-center text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation(); removePreview();">
-                                <i class="fa-solid fa-trash-can text-2xl hover:text-red-400 transition-colors"></i>
+                            <div id="removeFileBtn" class="hidden absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white w-8 h-8 rounded-full flex justify-center items-center backdrop-blur-sm transition-colors z-20 shadow-md cursor-pointer" onclick="event.stopPropagation(); removePreview();" title="حذف جميع المرفقات">
+                                <i class="fa-solid fa-trash-can"></i>
                             </div>
                         </div>
                     </div>
@@ -458,91 +403,59 @@
     </div>
 
     <script>
-        let currentFile = null;
-        const MAX_FILE_SIZE = 700 * 1024; // 700KB limit for Firestore base64 compatibility
+        window.currentFiles = [];
+        const MAX_FILE_SIZE = 1.5 * 1024 * 1024; // 1.5MB limit for Local Storage testing
 
-        document.getElementById('workYear').value = new Date().getFullYear();
-
-        function enterDashboard() {
-            document.getElementById('gatewayView').classList.add('hidden');
-            document.getElementById('dashboardView').classList.remove('hidden');
-            document.getElementById('dashboardView').classList.add('flex');
-            
-            if(!window.profileData.name && !window.profileData.org) {
-                setTimeout(openProfileModal, 500); // Prompt profile setup on first entry
+        window.addEventListener('DOMContentLoaded', () => {
+            const yearInput = document.getElementById('workYear');
+            if (yearInput) {
+                yearInput.value = new Date().getFullYear();
             }
-        }
-
-        function showToast(msg, type = 'success') {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toastIcon');
-            document.getElementById('toastMsg').innerText = msg;
-            
-            toast.className = 'toast show';
-            if (type === 'error') {
-                toast.classList.add('error');
-                icon.className = 'fa-solid fa-triangle-exclamation';
-            } else if (type === 'info') {
-                icon.className = 'fa-solid fa-info-circle';
-            } else {
-                icon.className = 'fa-solid fa-circle-check';
-            }
-            
-            setTimeout(() => toast.classList.remove('show'), 4000);
-        }
-
-        // --- Profile Logic ---
-        function openProfileModal() {
-            document.getElementById('profName').value = window.profileData.name || '';
-            document.getElementById('profOrg').value = window.profileData.org || '';
-            document.getElementById('profDate').value = window.profileData.date || '';
-            document.getElementById('profileModal').classList.remove('hidden');
-        }
-
-        function closeProfileModal() {
-            document.getElementById('profileModal').classList.add('hidden');
-        }
+            initApp();
+        });
 
         async function saveProfile() {
+            const name = document.getElementById('profName').value.trim();
+            const org = document.getElementById('profOrg').value.trim();
+            const date = document.getElementById('profDate').value;
+            const photoFile = document.getElementById('profPhoto').files[0];
+            
             const btn = event.target.closest('button');
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<div class="loader mx-auto border-nature-dark border-t-transparent"></div>';
-            
-            const newProfile = {
-                name: document.getElementById('profName').value.trim(),
-                org: document.getElementById('profOrg').value.trim(),
-                date: document.getElementById('profDate').value,
-                photo: window.profileData.photo // keep old photo if not changed
+            const origHtml = btn.innerHTML;
+            btn.innerHTML = '<div class="loader mx-auto"></div>';
+            btn.disabled = true;
+
+            const profileObj = { name, org, date, photo: window.profileData.photo };
+
+            const proceedSave = async () => {
+                try {
+                    await window.dbSaveProfile(profileObj);
+                    showToast('تم حفظ بيانات الهوية بنجاح');
+                    closeProfileModal();
+                } catch (e) {
+                    console.error(e);
+                    showToast('فشل في حفظ البيانات', 'error');
+                } finally {
+                    btn.innerHTML = origHtml;
+                    btn.disabled = false;
+                }
             };
-            
-            const photoInput = document.getElementById('profPhoto');
-            if (photoInput.files && photoInput.files[0]) {
-                if (photoInput.files[0].size > MAX_FILE_SIZE) {
-                    showToast('الصورة الشخصية كبيرة جداً! يرجى اختيار صورة أصغر من 700KB', 'error');
-                    btn.innerHTML = originalHtml;
+
+            if (photoFile) {
+                if (photoFile.size > MAX_FILE_SIZE) {
+                    showToast('حجم الصورة كبير جداً (أقصى حد 1.5MB)', 'error');
+                    btn.innerHTML = origHtml;
+                    btn.disabled = false;
                     return;
                 }
                 const reader = new FileReader();
                 reader.onload = async function(e) {
-                    newProfile.photo = e.target.result;
-                    await processSaveProfile(newProfile, btn, originalHtml);
+                    profileObj.photo = e.target.result;
+                    await proceedSave();
                 };
-                reader.readAsDataURL(photoInput.files[0]);
+                reader.readAsDataURL(photoFile);
             } else {
-                await processSaveProfile(newProfile, btn, originalHtml);
-            }
-        }
-
-        async function processSaveProfile(profileObj, btn, origHtml) {
-            try {
-                await window.dbSaveProfile(profileObj);
-                showToast('تم حفظ بيانات الهوية بنجاح');
-                closeProfileModal();
-            } catch (e) {
-                console.error(e);
-                showToast('فشل في حفظ البيانات', 'error');
-            } finally {
-                btn.innerHTML = origHtml;
+                await proceedSave();
             }
         }
 
@@ -566,40 +479,50 @@
         }
 
         // --- File Upload Logic ---
-        function previewFile(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        function previewFiles(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
 
-            if (file.size > MAX_FILE_SIZE) {
-                showToast(`حجم الملف يتجاوز ${MAX_FILE_SIZE/1024}KB المسموح بها لقاعدة البيانات`, 'error');
-                event.target.value = '';
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                let fileType = file.type || (file.name.endsWith('.md') ? 'text/markdown' : 'unknown');
-                currentFile = { data: e.target.result, type: fileType, name: file.name };
-                
-                const container = document.getElementById('filePreviewContainer');
-                if (fileType.startsWith('image/')) {
-                    container.innerHTML = `<img src="${currentFile.data}" class="w-full h-full object-cover">`;
-                } else if (fileType.startsWith('video/')) {
-                    container.innerHTML = `<i class="fa-solid fa-file-video text-4xl text-blue-300"></i>`;
-                } else {
-                    container.innerHTML = `<i class="fa-solid fa-file-lines text-4xl text-gray-300"></i>`;
+            const container = document.getElementById('filePreviewContainer');
+            
+            Array.from(files).forEach(file => {
+                if (file.size > MAX_FILE_SIZE) {
+                    showToast(`الملف ${file.name} يتجاوز 1.5MB ولن يتم إرفاقه`, 'error');
+                    return;
                 }
-                
-                container.classList.remove('hidden');
-                document.getElementById('removeFileBtn').classList.remove('hidden');
-                document.getElementById('uploadPlaceholder').classList.add('hidden');
-            }
-            reader.readAsDataURL(file);
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    let fileType = file.type || (file.name.endsWith('.md') ? 'text/markdown' : 'unknown');
+                    const newFileObj = { data: e.target.result, type: fileType, name: file.name };
+                    window.currentFiles.push(newFileObj);
+                    
+                    let thumbHtml = '';
+                    if (fileType.startsWith('image/')) {
+                        thumbHtml = `<img src="${newFileObj.data}" class="w-16 h-16 object-cover rounded-lg border border-nature-light/50 shadow-sm">`;
+                    } else if (fileType.startsWith('video/')) {
+                        thumbHtml = `<div class="w-16 h-16 bg-nature-dark/80 rounded-lg flex items-center justify-center border border-nature-light/50 shadow-sm"><i class="fa-solid fa-file-video text-2xl text-blue-300"></i></div>`;
+                    } else if (fileType === 'application/pdf') {
+                        thumbHtml = `<div class="w-16 h-16 bg-nature-dark/80 rounded-lg flex items-center justify-center border border-nature-light/50 shadow-sm"><i class="fa-solid fa-file-pdf text-2xl text-red-400"></i></div>`;
+                    } else {
+                        thumbHtml = `<div class="w-16 h-16 bg-nature-dark/80 rounded-lg flex items-center justify-center border border-nature-light/50 shadow-sm"><i class="fa-solid fa-file-lines text-2xl text-gray-300"></i></div>`;
+                    }
+                    
+                    container.innerHTML += thumbHtml;
+                    
+                    container.classList.remove('hidden');
+                    document.getElementById('removeFileBtn').classList.remove('hidden');
+                    document.getElementById('uploadPlaceholder').classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            });
+            event.target.value = ''; // Reset input to allow selecting same files again if needed
         }
 
         function removePreview() {
-            currentFile = null;
+            window.currentFiles = [];
             document.getElementById('workFile').value = '';
+            document.getElementById('filePreviewContainer').innerHTML = '';
             document.getElementById('filePreviewContainer').classList.add('hidden');
             document.getElementById('removeFileBtn').classList.add('hidden');
             document.getElementById('uploadPlaceholder').classList.remove('hidden');
@@ -659,45 +582,131 @@
             }
         }
 
-        // --- Work Management Logic ---
-        document.getElementById('workForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        async function triggerReportFromEvidences() {
             const title = document.getElementById('workTitle').value.trim();
-            const desc = document.getElementById('workDesc').value.trim();
-            const year = document.getElementById('workYear').value;
-            const submitBtn = this.querySelector('button[type="submit"]');
-
-            if (!title || !desc || !year || !currentFile) {
-                showToast('يرجى تعبئة كافة الحقول ورفع الشاهد', 'error');
+            if (!title) {
+                showToast('الرجاء كتابة "عنوان العمل" أولاً', 'error');
                 return;
             }
-            
-            const originalBtnHtml = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<div class="loader mx-auto border-nature-dark border-t-transparent"></div>';
-            submitBtn.disabled = true;
+            if (window.currentFiles.length === 0) {
+                showToast('يرجى إرفاق شواهد (صور) لتوليد التقرير منها', 'error');
+                return;
+            }
 
-            const newWork = {
-                title: title,
-                description: desc,
-                year: year,
-                file: currentFile,
-                createdAt: new Date().toISOString()
-            };
+            const imageFiles = window.currentFiles.filter(f => f.type.startsWith('image/'));
+            if (imageFiles.length === 0) {
+                showToast('تحليل الشواهد يتطلب إرفاق صور حالياً', 'info');
+                return;
+            }
+
+            const btn = document.getElementById('aiReportBtn');
+            const txt = document.getElementById('aiReportBtnText');
+            btn.disabled = true;
+            btn.classList.add('opacity-70');
+            txt.innerHTML = '<span class="loader border-white/50 border-t-white w-4 h-4 mr-1"></span> جاري التحليل والصياغة...';
 
             try {
-                await window.dbAddWork(newWork);
-                showToast('تم زراعة الإنجاز بنجاح');
-                this.reset();
-                document.getElementById('workYear').value = new Date().getFullYear();
-                removePreview();
-            } catch (e) {
-                console.error(e);
-                showToast('حدث خطأ أثناء الحفظ', 'error');
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                
+                const systemPrompt = "أنت خبير محتوى احترافي. سيقوم المستخدم بتزويدك بعنوان عمل، ومجموعة من الصور (الشواهد). المطلوب كتابة تقرير أو وصف ملخص واحترافي يبرز أهمية العمل ويصف ما يمكن ملاحظته في الشواهد. لا تستخدم مقدمات، فقط أعطني الوصف مباشرة ليوضع في ملف الإنجاز.";
+                
+                const parts = [
+                    { text: `عنوان العمل: ${title}\nقم بوصف هذا الإنجاز بناءً على الشواهد المرفقة.` }
+                ];
+
+                // إرفاق الصور لتراها النماذج الذكية
+                imageFiles.forEach(file => {
+                    const base64Data = file.data.split(',')[1];
+                    parts.push({
+                        inlineData: {
+                            mimeType: file.type,
+                            data: base64Data
+                        }
+                    });
+                });
+
+                const payload = {
+                    contents: [{ role: "user", parts: parts }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if(text) {
+                    document.getElementById('workDesc').value = text.trim();
+                    showToast('تم تحليل الشواهد وتوليد التقرير بنجاح', 'success');
+                } else {
+                    throw new Error("No text found in response");
+                }
+
+            } catch (error) {
+                console.error("AI Gen Error:", error);
+                showToast('حدث خطأ أثناء تحليل الشواهد. يرجى المحاولة لاحقاً.', 'error');
             } finally {
-                submitBtn.innerHTML = originalBtnHtml;
-                submitBtn.disabled = false;
+                btn.disabled = false;
+                btn.classList.remove('opacity-70');
+                txt.innerText = 'توليد تقرير الشواهد (AI)';
             }
-        });
+        }
+
+        // --- Work Management Logic ---
+        const workFormEl = document.getElementById('workForm');
+        if (workFormEl) {
+            workFormEl.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const title = document.getElementById('workTitle').value.trim();
+                const desc = document.getElementById('workDesc').value.trim();
+                const yearInputEl = document.getElementById('workYear');
+                const year = yearInputEl ? yearInputEl.value : new Date().getFullYear();
+                const submitBtn = this.querySelector('button[type="submit"]');
+
+                if (!title || !desc || !year || window.currentFiles.length === 0) {
+                    showToast('يرجى تعبئة كافة الحقول ورفع شاهد واحد على الأقل', 'error');
+                    return;
+                }
+                
+                const originalBtnHtml = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<div class="loader mx-auto border-nature-dark border-t-transparent"></div>';
+                submitBtn.disabled = true;
+
+                const newWork = {
+                    id: 'work_' + Date.now(),
+                    title: title,
+                    description: desc,
+                    year: year,
+                    files: [...window.currentFiles],
+                    createdAt: new Date().toISOString()
+                };
+
+                try {
+                    await window.dbAddWork(newWork);
+                    showToast('تم زراعة الإنجاز بنجاح');
+                    this.reset();
+                    if (yearInputEl) yearInputEl.value = new Date().getFullYear();
+                    removePreview();
+                } catch (e) {
+                    console.error(e);
+                    if (e.message === 'quota_exceeded') {
+                        showToast('عفواً، مساحة التخزين المحلية ممتلئة! يرجى حذف بعض الأعمال القديمة أو استخدام ملفات بحجم أصغر.', 'error');
+                    } else {
+                        showToast('حدث خطأ أثناء الحفظ', 'error');
+                    }
+                } finally {
+                    submitBtn.innerHTML = originalBtnHtml;
+                    submitBtn.disabled = false;
+                }
+            });
+        }
 
         async function removeWork(id) {
             if(!confirm("هل أنت متأكد من مسح هذا السجل؟")) return;
@@ -746,33 +755,56 @@
                 const card = document.createElement('div');
                 card.className = 'glass-panel card-hover overflow-hidden flex flex-col relative group';
                 
-                let mediaHtml = '';
-                const type = work.file?.type || '';
-                const data = work.file?.data;
-                const fName = work.file?.name || 'ملف';
+                // دعم الأعمال القديمة (صورة واحدة) والجديدة (عدة صور)
+                const workFiles = work.files || (work.file ? [work.file] : []);
+                
+                let mediaGalleryHtml = '';
+                if(workFiles.length > 0) {
+                    const gridCols = workFiles.length === 1 ? 'grid-cols-1' : (workFiles.length === 2 ? 'grid-cols-2' : 'grid-cols-3');
+                    mediaGalleryHtml = `<div class="grid ${gridCols} gap-0.5 h-48 w-full overflow-hidden bg-nature-dark/50">`;
+                    
+                    workFiles.slice(0, 3).forEach((f, idx) => {
+                        const type = f.type || '';
+                        const data = f.data;
+                        const fName = f.name || 'ملف';
+                        
+                        let moreOverlay = '';
+                        if (idx === 2 && workFiles.length > 3) {
+                            moreOverlay = `<div class="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-xl">+${workFiles.length - 3}</div>`;
+                        }
 
-                if (type.startsWith('image/')) {
-                    mediaHtml = `<img src="${data}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" onclick="window.open('${data}')">`;
-                } else if (type.startsWith('video/')) {
-                    mediaHtml = `<video src="${data}" controls class="w-full h-full object-cover bg-black"></video>`;
-                } else if (type === 'application/pdf') {
-                    mediaHtml = `<a href="${data}" download="${fName}" class="w-full h-full flex flex-col items-center justify-center bg-nature-light/20 hover:bg-nature-light/40 transition-colors text-nature-beige"><i class="fa-solid fa-file-pdf text-4xl mb-2 text-red-400"></i><span class="text-xs font-bold px-2 line-clamp-1">${fName}</span></a>`;
-                } else {
-                    mediaHtml = `<a href="${data}" download="${fName}" class="w-full h-full flex flex-col items-center justify-center bg-nature-light/20 hover:bg-nature-light/40 transition-colors text-nature-beige"><i class="fa-solid fa-file-lines text-4xl mb-2"></i><span class="text-xs font-bold px-2 line-clamp-1">${fName}</span></a>`;
+                        if (type.startsWith('image/')) {
+                            mediaGalleryHtml += `<div class="relative h-full w-full"><img src="${data}" class="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity" onclick="window.open('${data}')">${moreOverlay}</div>`;
+                        } else if (type.startsWith('video/')) {
+                            mediaGalleryHtml += `<div class="relative h-full w-full"><video src="${data}" class="w-full h-full object-cover bg-black" controls></video>${moreOverlay}</div>`;
+                        } else if (type === 'application/pdf') {
+                            mediaGalleryHtml += `<a href="${data}" download="${fName}" class="relative w-full h-full flex flex-col items-center justify-center bg-nature-light/20 hover:bg-nature-light/40 transition-colors text-nature-beige border-r border-nature-dark/50"><i class="fa-solid fa-file-pdf text-3xl mb-1 text-red-400"></i><span class="text-[10px] font-bold px-2 line-clamp-1">${fName}</span>${moreOverlay}</a>`;
+                        } else {
+                            mediaGalleryHtml += `<a href="${data}" download="${fName}" class="relative w-full h-full flex flex-col items-center justify-center bg-nature-light/20 hover:bg-nature-light/40 transition-colors text-nature-beige border-r border-nature-dark/50"><i class="fa-solid fa-file-lines text-3xl mb-1"></i><span class="text-[10px] font-bold px-2 line-clamp-1">${fName}</span>${moreOverlay}</a>`;
+                        }
+                    });
+                    mediaGalleryHtml += `</div>`;
                 }
 
-                const delBtn = window.isPublicView ? '' : `<button onclick="removeWork('${work.id}')" class="absolute top-3 left-3 bg-red-500/80 hover:bg-red-500 text-white w-8 h-8 rounded-full shadow backdrop-blur opacity-0 group-hover:opacity-100 transition-opacity z-20 flex items-center justify-center"><i class="fa-solid fa-trash text-sm"></i></button>`;
+                const delBtn = window.isPublicView ? '' : `<button onclick="removeWork('${work.id}')" class="absolute top-3 left-3 bg-red-500/80 hover:bg-red-500 text-white w-8 h-8 rounded-full shadow backdrop-blur opacity-0 group-hover:opacity-100 transition-opacity z-20 flex items-center justify-center" title="حذف الإنجاز"><i class="fa-solid fa-trash text-sm"></i></button>`;
+                
+                const pdfExportBtn = `<button onclick="exportSingleWorkPDF('${work.id}')" class="text-xs bg-nature-brown hover:bg-nature-brown/80 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" title="تصدير تقرير لهذا الإنجاز">
+                    <i class="fa-solid fa-file-pdf"></i> تقرير
+                </button>`;
 
                 card.innerHTML = `
-                    <div class="h-48 w-full relative border-b border-nature-light/20 bg-nature-dark/50">
-                        ${mediaHtml}
+                    <div class="relative border-b border-nature-light/20 w-full h-48">
+                        ${mediaGalleryHtml}
                         <div class="absolute top-3 right-3 bg-nature-dark/80 backdrop-blur text-nature-beige px-3 py-1 rounded-full text-xs font-bold border border-nature-light/30 shadow z-10 pointer-events-none">
                             <i class="fa-regular fa-calendar ml-1"></i> ${work.year}
                         </div>
                         ${delBtn}
                     </div>
                     <div class="p-5 flex-grow flex flex-col bg-gradient-to-b from-transparent to-nature-dark/50">
-                        <h3 class="font-bold text-xl text-nature-beige mb-3 line-clamp-1">${work.title}</h3>
+                        <div class="flex justify-between items-start mb-3 gap-2">
+                            <h3 class="font-bold text-xl text-nature-beige line-clamp-1 flex-grow">${work.title}</h3>
+                            ${pdfExportBtn}
+                        </div>
                         <p class="text-nature-beige/80 text-sm leading-relaxed line-clamp-3">${work.description}</p>
                     </div>
                 `;
@@ -781,6 +813,65 @@
         }
 
         // --- Features: PDF Export & Sharing ---
+        function exportSingleWorkPDF(workId) {
+            const work = window.worksData.find(w => w.id === workId);
+            if(!work) return;
+            
+            showToast('جاري تجهيز التقرير... يرجى الانتظار', 'info');
+            
+            const reportContainer = document.createElement('div');
+            reportContainer.style.padding = '40px';
+            reportContainer.style.background = '#ffffff';
+            reportContainer.style.color = '#1c2d24';
+            reportContainer.style.fontFamily = 'Tajawal, sans-serif';
+            reportContainer.style.direction = 'rtl';
+            reportContainer.style.width = '800px';
+            
+            const workFiles = work.files || (work.file ? [work.file] : []);
+            let imagesHtml = '';
+            workFiles.forEach(f => {
+                if(f.type.startsWith('image/')) {
+                    imagesHtml += `<img src="${f.data}" style="max-width: 100%; max-height: 350px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-block; margin-left: 10px;">`;
+                }
+            });
+
+            reportContainer.innerHTML = `
+                <div style="border-bottom: 3px solid #5e7d69; padding-bottom: 20px; margin-bottom: 30px; text-align: center;">
+                    <h1 style="color: #2a4537; margin-bottom: 10px; font-size: 28px;">تقرير إنجاز: ${work.title}</h1>
+                    <p style="color: #5e7d69; font-size: 16px;"><strong>السنة:</strong> ${work.year}</p>
+                    <p style="color: #7a5a41; font-size: 16px;"><strong>الاسم:</strong> ${window.profileData.name || 'غير محدد'} | <strong>الجهة:</strong> ${window.profileData.org || 'غير محدد'}</p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: #2a4537; font-size: 20px; border-bottom: 1px solid #dfd2c1; padding-bottom: 10px; margin-bottom: 15px;">الوصف والتقرير</h3>
+                    <p style="font-size: 16px; line-height: 1.8; color: #333;">${work.description.replace(/\n/g, '<br>')}</p>
+                </div>
+                <div>
+                    <h3 style="color: #2a4537; font-size: 20px; border-bottom: 1px solid #dfd2c1; padding-bottom: 10px; margin-bottom: 20px;">الشواهد المرفقة (صور)</h3>
+                    <div style="text-align: center;">
+                        ${imagesHtml || '<p style="color: #777;">لا توجد شواهد صور قابلة للطباعة.</p>'}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(reportContainer);
+            
+            const opt = {
+                margin:       10,
+                filename:     `تقرير_${work.title.substring(0, 15)}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(reportContainer).save().then(() => {
+                document.body.removeChild(reportContainer);
+                showToast('تم تصدير التقرير بنجاح!', 'success');
+            }).catch(e => {
+                document.body.removeChild(reportContainer);
+                showToast('حدث خطأ أثناء التصدير', 'error');
+            });
+        }
+
         function exportToPDF() {
             showToast('جاري تجهيز الملف للطباعة... قد يستغرق لحظات', 'info');
             const element = document.getElementById('portfolio-content');
@@ -813,26 +904,25 @@
             
             const btn = event.target.closest('button');
             const orig = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري النشر...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري النسخ...';
             
             try {
-                const uid = await window.dbPublishPortfolio();
+                // إنشاء رابط محاكاة للعرض العام
                 const url = new URL(window.location.href);
                 url.searchParams.set('view', 'public');
-                url.searchParams.set('uid', uid);
                 
                 await navigator.clipboard.writeText(url.toString());
-                showToast('تم النشر ونسخ الرابط العام! يمكنك مشاركته الآن.');
+                showToast('تم نسخ الرابط العام لمحاكاة وضع الزائر بنجاح!');
             } catch (e) {
                 console.error(e);
                 try { 
                     // Fallback for older browsers
                     const temp = document.createElement('input');
-                    temp.value = window.location.href + '?view=public&uid=' + window.currentUser.uid;
+                    temp.value = window.location.href + '?view=public';
                     document.body.appendChild(temp); temp.select(); document.execCommand('copy'); document.body.removeChild(temp);
                     showToast('تم نسخ الرابط العام!');
                 } catch(err) {
-                    showToast('انسخ الرابط من شريط العنوان يدوياً', 'info');
+                    showToast('انسخ الرابط من شريط العنوان يدوياً وأضف ?view=public', 'info');
                 }
             } finally {
                 btn.innerHTML = orig;
